@@ -58,8 +58,9 @@ export default function App() {
     setAiLoading(true);
     try {
       const response = await fetch("/api/chat", {
-        method:"POST",
-        body:JSON.stringify({
+  method:"POST",
+  headers:{ "Content-Type":"application/json" },
+  body:JSON.stringify({
           model:"claude-sonnet-4-20250514",
           max_tokens:600,
           system:"You are an expert vinyl record collector with 30+ years crate-digging the Bay Area and LA. You know the 100 most collectible records by heart — pressing details, matrix codes, label variations, what to look for. You know every record shop in Oakland, Berkeley, San Francisco, and Los Angeles. Give concise, practical advice a phone user can act on immediately. Be direct and passionate like a collector, not a textbook.",
