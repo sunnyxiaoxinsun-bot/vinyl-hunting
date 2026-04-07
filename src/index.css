@@ -1,0 +1,5 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: #0A0A0A; color: #E5E5E5; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+input, textarea, select, button { font-family: inherit; }
+::-webkit-scrollbar { width: 0; }
