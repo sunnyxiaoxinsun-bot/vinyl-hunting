@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { VINYLS, SHOPS, ERAS, GENRES, RARITIES } from "./data";
 
 const rarityColor = (r) => {
@@ -260,6 +261,7 @@ export default function App() {
           </div>
         </div>
       )}
+      <Analytics />
     </div>
   );
 }
