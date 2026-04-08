@@ -81,20 +81,35 @@ export default function App() {
   const [shopArea, setShopArea] = useState("all");
   const [selectedVinyl, setSelectedVinyl] = useState(null);
   const [selectedShop, setSelectedShop] = useState(null);
-  const [favorites, setFavorites] = useState(() => {
+  const [shopFavs, setShopFavs] = useState(() => {
     try { return JSON.parse(localStorage.getItem("shopFavorites") || "[]"); }
     catch { return []; }
   });
+  const [vinylFavs, setVinylFavs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("vinylFavorites") || "[]"); }
+    catch { return []; }
+  });
   const [favOnly, setFavOnly] = useState(false);
+  const [vinylFavOnly, setVinylFavOnly] = useState(false);
 
   useEffect(() => {
-    try { localStorage.setItem("shopFavorites", JSON.stringify(favorites)); }
+    try { localStorage.setItem("shopFavorites", JSON.stringify(shopFavs)); }
     catch {}
-  }, [favorites]);
+  }, [shopFavs]);
 
-  const toggleFav = (id, e) => {
+  useEffect(() => {
+    try { localStorage.setItem("vinylFavorites", JSON.stringify(vinylFavs)); }
+    catch {}
+  }, [vinylFavs]);
+
+  const toggleShopFav = (id, e) => {
     e.stopPropagation();
-    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+    setShopFavs(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+  };
+
+  const toggleVinylFav = (id, e) => {
+    e.stopPropagation();
+    setVinylFavs(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
   };
 
   const filteredVinyls = VINYLS.filter(v => {
@@ -103,14 +118,15 @@ export default function App() {
       && (eraFilter === "All" || v.era === eraFilter)
       && (genreFilter === "All" || v.genre.toLowerCase().includes(genreFilter.toLowerCase()))
       && (rarityFilter === "All" || v.rarity === rarityFilter)
-      && (!findableOnly || v.findable);
+      && (!findableOnly || v.findable)
+      && (!vinylFavOnly || vinylFavs.includes(v.id));
   });
 
   const filteredShops = SHOPS.filter(s => {
     const q = shopSearch.toLowerCase();
     return (!q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.specialty.toLowerCase().includes(q))
       && (shopArea === "all" || s.area === shopArea)
-      && (!favOnly || favorites.includes(s.id));
+      && (!favOnly || shopFavs.includes(s.id));
   });
 
   const S = {
@@ -128,7 +144,7 @@ export default function App() {
     sel:{ background:"#111", border:"1px solid #222", borderRadius:4, color:"#CCC", fontSize:9, padding:"6px 6px", fontFamily:"inherit", outline:"none", cursor:"pointer", letterSpacing:"0.04em" },
     toggle:(on)=>({ background:on?"#FF4444":"#111", border:`1px solid ${on?"#FF4444":"#222"}`, borderRadius:4, color:on?"#000":"#555", fontSize:9, padding:"6px 8px", fontFamily:"inherit", cursor:"pointer", letterSpacing:"0.06em" }),
     countLine:{ fontSize:9, color:"#444", letterSpacing:"0.1em", marginBottom:10 },
-    card:{ background:"#111", border:"1px solid #1E1E1E", borderRadius:8, padding:"12px", marginBottom:7, cursor:"pointer" },
+    card:{ background:"#111", border:"1px solid #1E1E1E", borderRadius:8, padding:"12px", marginBottom:7, cursor:"pointer", position:"relative" },
     rank:{ fontSize:9, color:"#333", letterSpacing:"0.1em", marginBottom:3 },
     cardTitle:{ fontSize:14, color:"#FFF", marginBottom:2, lineHeight:1.3 },
     cardSub:{ fontSize:11, color:"#666", marginBottom:8 },
@@ -194,11 +210,15 @@ export default function App() {
               {RARITIES.map(r=><option key={r} value={r}>{r==="All"?"All rarities":r}</option>)}
             </select>
             <button style={S.toggle(findableOnly)} onClick={()=>setFindableOnly(!findableOnly)}>FINDABLE</button>
+            <button style={S.toggle(vinylFavOnly)} onClick={()=>setVinylFavOnly(!vinylFavOnly)}>♥ SAVED</button>
           </div>
           <div style={S.countLine}>{filteredVinyls.length} / {VINYLS.length} RECORDS</div>
           {filteredVinyls.map(v=>(
             <div key={v.id} style={S.card} onClick={()=>setSelectedVinyl(v)}>
-              <div style={S.rank}>#{v.rank}</div>
+              <button style={S.favBtn(vinylFavs.includes(v.id))} onClick={e=>toggleVinylFav(v.id,e)}>
+                {vinylFavs.includes(v.id) ? "♥" : "♡"}
+              </button>
+              <div style={{...S.rank, paddingRight:24}}>#{v.rank}</div>
               <div style={S.cardTitle}>{v.title}</div>
               <div style={S.cardSub}>{v.artist} · {v.label} · {v.year}</div>
               <div style={S.pills}>
@@ -226,8 +246,8 @@ export default function App() {
             const open = isOpenNow(s.hours);
             return (
               <div key={s.id} style={S.shopCard} onClick={()=>setSelectedShop(s)}>
-                <button style={S.favBtn(favorites.includes(s.id))} onClick={e=>toggleFav(s.id,e)}>
-                  {favorites.includes(s.id) ? "♥" : "♡"}
+                <button style={S.favBtn(shopFavs.includes(s.id))} onClick={e=>toggleShopFav(s.id,e)}>
+                  {shopFavs.includes(s.id) ? "♥" : "♡"}
                 </button>
                 <div style={S.shopName}>{s.name}</div>
                 <div style={S.shopCity}>{s.city}</div>
@@ -265,6 +285,14 @@ export default function App() {
             </div>
             <div style={S.mDesc}>{selectedVinyl.description}</div>
             <div style={S.mValue}>💰 Value range: {selectedVinyl.value}</div>
+            <div style={{marginTop:12}}>
+              <button
+                style={{...S.actionBtn, background: vinylFavs.includes(selectedVinyl.id)?"#3D0000":"#1A1A1A", color: vinylFavs.includes(selectedVinyl.id)?"#FF6B6B":"#777", border: vinylFavs.includes(selectedVinyl.id)?"1px solid #8B000044":"1px solid #333"}}
+                onClick={e=>toggleVinylFav(selectedVinyl.id,e)}
+              >
+                {vinylFavs.includes(selectedVinyl.id) ? "♥ Saved" : "♡ Save"}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -313,10 +341,10 @@ export default function App() {
                   </a>
                 )}
                 <button
-                  style={{...S.actionBtn, background: favorites.includes(selectedShop.id)?"#3D0000":"#1A1A1A", color: favorites.includes(selectedShop.id)?"#FF6B6B":"#777", border: favorites.includes(selectedShop.id)?"1px solid #8B000044":"1px solid #333"}}
-                  onClick={e=>toggleFav(selectedShop.id,e)}
+                  style={{...S.actionBtn, background: shopFavs.includes(selectedShop.id)?"#3D0000":"#1A1A1A", color: shopFavs.includes(selectedShop.id)?"#FF6B6B":"#777", border: shopFavs.includes(selectedShop.id)?"1px solid #8B000044":"1px solid #333"}}
+                  onClick={e=>toggleShopFav(selectedShop.id,e)}
                 >
-                  {favorites.includes(selectedShop.id) ? "♥ Saved" : "♡ Save"}
+                  {shopFavs.includes(selectedShop.id) ? "♥ Saved" : "♡ Save"}
                 </button>
               </div>
             </div>
