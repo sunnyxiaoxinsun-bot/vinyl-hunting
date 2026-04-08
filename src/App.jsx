@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { VINYLS, SHOPS, AREAS, ERAS, GENRES, RARITIES } from "./data";
+import { useState, useEffect, useRef } from "react";
+import { Analytics } from "@vercel/analytics/react";
+import { VINYLS, SHOPS, ERAS, GENRES, RARITIES } from "./data";
 
 const rarityColor = (r) => {
   if (r === "holy grail") return { bg:"#3D0000", text:"#FF6B6B", border:"#8B0000" };
@@ -349,8 +350,9 @@ export default function App() {
               </div>
             </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
+      <Analytics />
     </div>
   );
 }
