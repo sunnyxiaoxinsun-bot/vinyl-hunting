@@ -685,7 +685,7 @@ export const SHOPS = [
   { id:94, name:"Flash Disc Ranch", area:"tokyo", city:"Tokyo", address:"Koenji, Tokyo", specialty:"Psych / Garage / Folk", notes:"Koenji's psychedelia and garage rock specialist. World-music and rare folk gems too. The Koenji neighborhood is Tokyo's vinyl hunter heartland.", rating:4.7, phone:"", hours:"Tue–Sun 12pm–8pm", website:"" },
   { id:95, name:"Jet Set Records", area:"tokyo", city:"Tokyo", address:"B1F 33-9 Udagawacho, Shibuya-ku, Tokyo", specialty:"Electronic / Dance", notes:"Underground electronic and dance specialist. Basement shop in Shibuya. Strong on minimal techno, Detroit, and Chicago imports.", rating:4.6, phone:"", hours:"Daily 12pm–9pm", website:"https://www.jetsetrecords.net" },
   { id:96, name:"Village Vanguard", area:"tokyo", city:"Tokyo", address:"Multiple locations, Tokyo", specialty:"All genres", notes:"Part record shop, part curiosity store. Great for finding weird Japanese pressings and oddities. Multiple locations across the city.", rating:4.4, phone:"", hours:"Daily 10am–11pm", website:"" },
-];
+
 
   // ── SHANGHAI ──────────────────────────────────────────────────────────────
   { id:97,  name:"Uptown Records", area:"shanghai", city:"Shanghai", address:"115 Pingwu Lu, Changning District, Shanghai", specialty:"All genres", notes:"Shanghai's vinyl pioneer since 2011, founded by SF expat DJ Sacco. Rock, hip-hop, funk, soul, reggae and Chinese indie all represented. Also a vintage clothing shop and event space. The heartbeat of Shanghai's record scene.", rating:4.8, phone:"+86 21 6223 8368", hours:"Daily 2pm–9pm", website:"" },
