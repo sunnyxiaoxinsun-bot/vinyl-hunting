@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { VINYLS, SHOPS, ERAS, GENRES, RARITIES } from "./data";
 
 const rarityColor = (r) => {
@@ -9,7 +9,7 @@ const rarityColor = (r) => {
 };
 
 const eraColor = (era) => {
-  const map = { "1930s":"#B45309","1950s":"#D97706","1960s":"#9333EA","1970s":"#DC2626","1980s":"#2563EB","1990s":"#059669","2000s":"#D97706","2010s":"#7C3AED" };
+  const map = { "1930s":"#B45309","1940s":"#92400E","1950s":"#D97706","1960s":"#9333EA","1970s":"#DC2626","1980s":"#2563EB","1990s":"#059669","2000s":"#0891B2","2010s":"#7C3AED","2020s":"#DB2777" };
   return map[era] || "#6B7280";
 };
 
@@ -24,15 +24,6 @@ export default function App() {
   const [shopArea, setShopArea] = useState("all");
   const [selectedVinyl, setSelectedVinyl] = useState(null);
   const [selectedShop, setSelectedShop] = useState(null);
-  const [aiMessages, setAiMessages] = useState([
-    { role:"assistant", content:"Hey! I'm your vinyl hunting AI. Ask me anything — how to spot a first pressing, what matrix codes to look for, which shops to hit for a genre, or anything about the 100 records on this list. Let's dig." }
-  ]);
-  const [aiInput, setAiInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const chatEndRef = useRef(null);
-  const inputRef = useRef(null);
-
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior:"smooth" }); }, [aiMessages]);
 
   const filteredVinyls = VINYLS.filter(v => {
     const s = vinylSearch.toLowerCase();
@@ -48,33 +39,6 @@ export default function App() {
     return (!q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.specialty.toLowerCase().includes(q))
       && (shopArea === "all" || s.area === shopArea);
   });
-
-  const sendAiMessage = async () => {
-    if (!aiInput.trim() || aiLoading) return;
-    const userMsg = aiInput.trim();
-    setAiInput("");
-    const newMessages = [...aiMessages, { role:"user", content:userMsg }];
-    setAiMessages(newMessages);
-    setAiLoading(true);
-    try {
-      const response = await fetch("/api/chat", {
-  method:"POST",
-  headers:{ "Content-Type":"application/json" },
-  body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",
-          max_tokens:600,
-          system:"You are an expert vinyl record collector with 30+ years crate-digging the Bay Area and LA. You know the 100 most collectible records by heart — pressing details, matrix codes, label variations, what to look for. You know every record shop in Oakland, Berkeley, San Francisco, and Los Angeles. Give concise, practical advice a phone user can act on immediately. Be direct and passionate like a collector, not a textbook.",
-          messages:newMessages.map(m => ({ role:m.role, content:m.content }))
-        })
-      });
-      const data = await response.json();
-      const reply = data.content?.map(b => b.text || "").join("") || "Couldn't connect — try again!";
-      setAiMessages([...newMessages, { role:"assistant", content:reply }]);
-    } catch {
-      setAiMessages([...newMessages, { role:"assistant", content:"Connection issue — try again in a moment." }]);
-    }
-    setAiLoading(false);
-  };
 
   const S = {
     app:{ background:"#0A0A0A", minHeight:"100vh", fontFamily:"'Space Mono','Courier New',monospace", color:"#E5E5E5", maxWidth:480, margin:"0 auto" },
@@ -117,18 +81,11 @@ export default function App() {
     starNum:{ fontSize:11, color:"#FBBF24" },
     areaTabs:{ display:"flex", gap:6, marginBottom:10 },
     areaTab:(a)=>({ padding:"6px 12px", borderRadius:99, fontSize:9, letterSpacing:"0.08em", cursor:"pointer", background:a?"#FF4444":"#111", color:a?"#000":"#555", border:a?"1px solid #FF4444":"1px solid #222", fontFamily:"inherit", textTransform:"uppercase" }),
-    chatWrap:{ display:"flex", flexDirection:"column", height:"calc(100vh - 130px)" },
-    chatMsgs:{ flex:1, overflowY:"auto", paddingBottom:8 },
-    bubble:(u)=>({ maxWidth:"86%", marginLeft:u?"auto":0, marginBottom:9, background:u?"#FF4444":"#161616", border:u?"none":"1px solid #222", borderRadius:u?"12px 12px 2px 12px":"12px 12px 12px 2px", padding:"10px 12px", fontSize:13, color:u?"#000":"#BBBBBB", lineHeight:1.65, whiteSpace:"pre-wrap" }),
-    chatInputRow:{ display:"flex", gap:7, borderTop:"1px solid #1E1E1E", paddingTop:10 },
-    chatIn:{ flex:1, background:"#111", border:"1px solid #222", borderRadius:6, padding:"9px 11px", color:"#E5E5E5", fontSize:13, fontFamily:"inherit", outline:"none", resize:"none" },
-    sendBtn:{ background:"#FF4444", border:"none", borderRadius:6, padding:"9px 14px", color:"#000", cursor:"pointer", fontSize:14, fontWeight:"bold" }
   };
 
   return (
     <div style={S.app}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
-
       <div style={S.header}>
         <div style={S.logoRow}>
           <div style={S.disc} />
@@ -138,7 +95,7 @@ export default function App() {
           </div>
         </div>
         <div style={S.tabs}>
-          {[["hunt","THE 100"],["shops","SHOPS"],["ai","AI EXPERT"]].map(([k,l])=>(
+          {[["hunt","THE 1000"],["shops","SHOPS"]].map(([k,l])=>(
             <button key={k} style={S.tab(tab===k)} onClick={()=>setTab(k)}>{l}</button>
           ))}
         </div>
@@ -159,7 +116,7 @@ export default function App() {
             </select>
             <button style={S.toggle(findableOnly)} onClick={()=>setFindableOnly(!findableOnly)}>FINDABLE</button>
           </div>
-          <div style={S.countLine}>{filteredVinyls.length} / 100 RECORDS</div>
+          <div style={S.countLine}>{filteredVinyls.length} / {VINYLS.length} RECORDS</div>
           {filteredVinyls.map(v=>(
             <div key={v.id} style={S.card} onClick={()=>setSelectedVinyl(v)}>
               <div style={S.rank}>#{v.rank}</div>
@@ -198,32 +155,13 @@ export default function App() {
             </div>
           ))}
         </>}
-
-        {tab==="ai" && (
-          <div style={S.chatWrap}>
-            <div style={S.chatMsgs}>
-              {aiMessages.map((m,i)=>(
-                <div key={i} style={S.bubble(m.role==="user")}>{m.content}</div>
-              ))}
-              {aiLoading && <div style={S.bubble(false)}>Digging through the crates...</div>}
-              <div ref={chatEndRef} />
-            </div>
-            <div style={S.chatInputRow}>
-              <textarea ref={inputRef} style={S.chatIn} rows={2}
-                placeholder="Ask about pressing IDs, matrix codes, shops by genre..."
-                value={aiInput} onChange={e=>setAiInput(e.target.value)}
-                onKeyDown={e=>{ if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendAiMessage();} }} />
-              <button style={S.sendBtn} onClick={sendAiMessage}>↑</button>
-            </div>
-          </div>
-        )}
       </div>
 
       {selectedVinyl && (
         <div style={S.modal} onClick={()=>setSelectedVinyl(null)}>
           <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
             <button style={S.closeBtn} onClick={()=>setSelectedVinyl(null)}>CLOSE ✕</button>
-            <div style={S.mRank}>#{selectedVinyl.rank} OF 100</div>
+            <div style={S.mRank}>#{selectedVinyl.rank} OF {VINYLS.length}</div>
             <div style={S.mTitle}>{selectedVinyl.title}</div>
             <div style={S.mArtist}>{selectedVinyl.artist}</div>
             <div style={{...S.pills, marginBottom:12}}>
