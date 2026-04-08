@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { VINYLS, SHOPS, ERAS, GENRES, RARITIES } from "./data";
+import { useState, useEffect } from "react";
+import { VINYLS, SHOPS, AREAS, ERAS, GENRES, RARITIES } from "./data";
 
 const rarityColor = (r) => {
   if (r === "holy grail") return { bg:"#3D0000", text:"#FF6B6B", border:"#8B0000" };
@@ -13,6 +13,63 @@ const eraColor = (era) => {
   return map[era] || "#6B7280";
 };
 
+const isOpenNow = (hoursStr) => {
+  if (!hoursStr || hoursStr.toLowerCase().includes("check")) return null;
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const hour = now.getHours() + now.getMinutes() / 60;
+  const lower = hoursStr.toLowerCase();
+
+  // Parse a time like "11am" or "9pm" to a decimal hour
+  const parseTime = (t) => {
+    const m = t.trim().match(/^(\d+)(?::(\d+))?(am|pm)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1]);
+    const min = m[2] ? parseInt(m[2]) : 0;
+    if (m[3].toLowerCase() === "pm" && h !== 12) h += 12;
+    if (m[3].toLowerCase() === "am" && h === 12) h = 0;
+    return h + min / 60;
+  };
+
+  // Try to find today's range. We look for patterns like "mon–sat 11am–8pm, sun 12pm–6pm"
+  const dayNames = ["sun","mon","tue","wed","thu","fri","sat"];
+  const todayName = dayNames[day];
+
+  // Split by comma to get segments
+  const segments = lower.split(",").map(s => s.trim());
+  for (const seg of segments) {
+    // Check if this segment covers today
+    const rangeMatcher = seg.match(/([a-z]+)[–\-]([a-z]+)/);
+    const singleMatcher = seg.match(/^([a-z]+)\s/);
+    let covers = false;
+
+    if (rangeMatcher) {
+      const start = dayNames.indexOf(rangeMatcher[1]);
+      const end = dayNames.indexOf(rangeMatcher[2]);
+      if (start !== -1 && end !== -1) {
+        covers = start <= end ? (day >= start && day <= end) : (day >= start || day <= end);
+      }
+    } else if (singleMatcher) {
+      covers = dayNames.indexOf(singleMatcher[1]) === day;
+    } else if (seg.startsWith("daily")) {
+      covers = true;
+    }
+
+    if (covers) {
+      const timeMatcher = seg.match(/(\d+(?::\d+)?(?:am|pm))[–\-](\d+(?::\d+)?(?:am|pm))/i);
+      if (timeMatcher) {
+        const open = parseTime(timeMatcher[1]);
+        const close = parseTime(timeMatcher[2]);
+        if (open !== null && close !== null) return hour >= open && hour < close;
+      }
+    }
+  }
+  return null;
+};
+
+const mapsUrl = (address) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
 export default function App() {
   const [tab, setTab] = useState("hunt");
   const [vinylSearch, setVinylSearch] = useState("");
@@ -24,6 +81,21 @@ export default function App() {
   const [shopArea, setShopArea] = useState("all");
   const [selectedVinyl, setSelectedVinyl] = useState(null);
   const [selectedShop, setSelectedShop] = useState(null);
+  const [favorites, setFavorites] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("shopFavorites") || "[]"); }
+    catch { return []; }
+  });
+  const [favOnly, setFavOnly] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem("shopFavorites", JSON.stringify(favorites)); }
+    catch {}
+  }, [favorites]);
+
+  const toggleFav = (id, e) => {
+    e.stopPropagation();
+    setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+  };
 
   const filteredVinyls = VINYLS.filter(v => {
     const s = vinylSearch.toLowerCase();
@@ -37,7 +109,8 @@ export default function App() {
   const filteredShops = SHOPS.filter(s => {
     const q = shopSearch.toLowerCase();
     return (!q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.specialty.toLowerCase().includes(q))
-      && (shopArea === "all" || s.area === shopArea);
+      && (shopArea === "all" || s.area === shopArea)
+      && (!favOnly || favorites.includes(s.id));
   });
 
   const S = {
@@ -73,29 +146,35 @@ export default function App() {
     mMetaH:{ color:"#CCC" },
     mDesc:{ fontSize:13, color:"#999", lineHeight:1.75, marginBottom:12 },
     mValue:{ background:"#0A1A0A", border:"1px solid #16A34A33", borderRadius:6, padding:"10px 12px", fontSize:12, color:"#4ADE80" },
-    shopCard:{ background:"#111", border:"1px solid #1E1E1E", borderRadius:8, padding:"12px", marginBottom:7, cursor:"pointer" },
-    shopName:{ fontSize:14, color:"#FFF", marginBottom:2 },
+    shopCard:{ background:"#111", border:"1px solid #1E1E1E", borderRadius:8, padding:"12px", marginBottom:7, cursor:"pointer", position:"relative" },
+    shopName:{ fontSize:14, color:"#FFF", marginBottom:2, paddingRight:28 },
     shopCity:{ fontSize:10, color:"#FF4444", marginBottom:6, letterSpacing:"0.07em" },
     shopNotes:{ fontSize:12, color:"#777", lineHeight:1.55 },
     stars:{ display:"flex", gap:3, alignItems:"center", marginTop:6 },
     starNum:{ fontSize:11, color:"#FBBF24" },
-    areaTabs:{ display:"flex", gap:6, marginBottom:10 },
-    areaTab:(a)=>({ padding:"6px 12px", borderRadius:99, fontSize:9, letterSpacing:"0.08em", cursor:"pointer", background:a?"#FF4444":"#111", color:a?"#000":"#555", border:a?"1px solid #FF4444":"1px solid #222", fontFamily:"inherit", textTransform:"uppercase" }),
+    areaTabs:{ display:"flex", gap:5, marginBottom:10, flexWrap:"wrap" },
+    areaTab:(a)=>({ padding:"5px 10px", borderRadius:99, fontSize:8, letterSpacing:"0.08em", cursor:"pointer", background:a?"#FF4444":"#111", color:a?"#000":"#555", border:a?"1px solid #FF4444":"1px solid #222", fontFamily:"inherit", textTransform:"uppercase" }),
+    favBtn:(on)=>({ position:"absolute", top:10, right:10, background:"transparent", border:"none", fontSize:16, cursor:"pointer", color:on?"#FF4444":"#333", padding:2 }),
+    openBadge:(open)=>({ fontSize:8, padding:"3px 7px", borderRadius:99, background:open?"#0A2A0A":"#1A0A0A", color:open?"#4ADE80":"#666", border:`1px solid ${open?"#16A34A44":"#33111144"}`, letterSpacing:"0.08em" }),
+    actionBtn:{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10, padding:"7px 12px", borderRadius:5, cursor:"pointer", fontFamily:"inherit", border:"none", letterSpacing:"0.06em", textDecoration:"none" },
+    mapsBtn:{ background:"#1A1A2E", color:"#60A5FA", border:"1px solid #2563EB44" },
+    websiteBtn:{ background:"#1A1A1A", color:"#CCC", border:"1px solid #333" },
   };
 
   return (
     <div style={S.app}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
       <div style={S.header}>
         <div style={S.logoRow}>
           <div style={S.disc} />
           <div>
             <div style={S.logoText}>VINYL HUNTER</div>
-            <div style={S.logoSub}>COLLECTOR'S FIELD GUIDE · BAY AREA & LA</div>
+            <div style={S.logoSub}>COLLECTOR'S FIELD GUIDE · WORLDWIDE</div>
           </div>
         </div>
         <div style={S.tabs}>
-          {[["hunt","THE 1000"],["shops","SHOPS"]].map(([k,l])=>(
+          {[["hunt","THE 500"],["shops","SHOPS"]].map(([k,l])=>(
             <button key={k} style={S.tab(tab===k)} onClick={()=>setTab(k)}>{l}</button>
           ))}
         </div>
@@ -135,25 +214,35 @@ export default function App() {
         {tab==="shops" && <>
           <input style={S.search} placeholder="Search name, city, or genre..." value={shopSearch} onChange={e=>setShopSearch(e.target.value)} />
           <div style={S.areaTabs}>
-            {[["all","ALL"],["bay","BAY AREA"],["la","LOS ANGELES"]].map(([k,l])=>(
-              <button key={k} style={S.areaTab(shopArea===k)} onClick={()=>setShopArea(k)}>{l}</button>
+            {AREAS.map(({key,label})=>(
+              <button key={key} style={S.areaTab(shopArea===key)} onClick={()=>setShopArea(key)}>{label}</button>
             ))}
           </div>
+          <div style={S.filterRow}>
+            <button style={S.toggle(favOnly)} onClick={()=>setFavOnly(!favOnly)}>♥ SAVED</button>
+          </div>
           <div style={S.countLine}>{filteredShops.length} / {SHOPS.length} SHOPS</div>
-          {filteredShops.map(s=>(
-            <div key={s.id} style={S.shopCard} onClick={()=>setSelectedShop(s)}>
-              <div style={S.shopName}>{s.name}</div>
-              <div style={S.shopCity}>{s.city} · {s.area==="bay"?"Bay Area":"Los Angeles"}</div>
-              <div style={{...S.pills, marginBottom:7}}>
-                <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:"#1A1A1A",color:"#555",border:"1px solid #222"}}>{s.specialty}</span>
+          {filteredShops.map(s=>{
+            const open = isOpenNow(s.hours);
+            return (
+              <div key={s.id} style={S.shopCard} onClick={()=>setSelectedShop(s)}>
+                <button style={S.favBtn(favorites.includes(s.id))} onClick={e=>toggleFav(s.id,e)}>
+                  {favorites.includes(s.id) ? "♥" : "♡"}
+                </button>
+                <div style={S.shopName}>{s.name}</div>
+                <div style={S.shopCity}>{s.city}</div>
+                <div style={{...S.pills, marginBottom:7}}>
+                  <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:"#1A1A1A",color:"#555",border:"1px solid #222"}}>{s.specialty}</span>
+                  {open !== null && <span style={S.openBadge(open)}>{open?"OPEN NOW":"CLOSED"}</span>}
+                </div>
+                <div style={S.shopNotes}>{s.notes}</div>
+                <div style={S.stars}>
+                  <span style={S.starNum}>{s.rating}</span>
+                  <span style={{fontSize:11,color:"#FBBF24"}}>{"★".repeat(Math.floor(s.rating))}{"☆".repeat(5-Math.floor(s.rating))}</span>
+                </div>
               </div>
-              <div style={S.shopNotes}>{s.notes}</div>
-              <div style={S.stars}>
-                <span style={S.starNum}>{s.rating}</span>
-                <span style={{fontSize:11,color:"#FBBF24"}}>{"★".repeat(Math.floor(s.rating))}{"☆".repeat(5-Math.floor(s.rating))}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </>}
       </div>
 
@@ -180,24 +269,61 @@ export default function App() {
         </div>
       )}
 
-      {selectedShop && (
-        <div style={S.modal} onClick={()=>setSelectedShop(null)}>
-          <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-            <button style={S.closeBtn} onClick={()=>setSelectedShop(null)}>CLOSE ✕</button>
-            <div style={S.stars}><span style={S.starNum}>{selectedShop.rating}</span><span style={{fontSize:12,color:"#FBBF24"}}>{"★".repeat(Math.floor(selectedShop.rating))}</span></div>
-            <div style={{...S.mTitle, marginTop:8}}>{selectedShop.name}</div>
-            <div style={{...S.shopCity, fontSize:12, marginBottom:12}}>{selectedShop.city} · {selectedShop.area==="bay"?"Bay Area":"Los Angeles"}</div>
-            <div style={{...S.pills, marginBottom:12}}>
-              <span style={{fontSize:9,padding:"4px 9px",borderRadius:99,background:"#1A1A1A",color:"#666",border:"1px solid #222",letterSpacing:"0.06em"}}>{selectedShop.specialty}</span>
+      {selectedShop && (()=>{
+        const open = isOpenNow(selectedShop.hours);
+        return (
+          <div style={S.modal} onClick={()=>setSelectedShop(null)}>
+            <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
+              <button style={S.closeBtn} onClick={()=>setSelectedShop(null)}>CLOSE ✕</button>
+              <div style={S.stars}>
+                <span style={S.starNum}>{selectedShop.rating}</span>
+                <span style={{fontSize:12,color:"#FBBF24"}}>{"★".repeat(Math.floor(selectedShop.rating))}</span>
+                {open !== null && <span style={{...S.openBadge(open), marginLeft:6}}>{open?"OPEN NOW":"CLOSED"}</span>}
+              </div>
+              <div style={{...S.mTitle, marginTop:8}}>{selectedShop.name}</div>
+              <div style={{...S.shopCity, fontSize:12, marginBottom:12}}>{selectedShop.city}</div>
+              <div style={{...S.pills, marginBottom:12}}>
+                <span style={{fontSize:9,padding:"4px 9px",borderRadius:99,background:"#1A1A1A",color:"#666",border:"1px solid #222",letterSpacing:"0.06em"}}>{selectedShop.specialty}</span>
+              </div>
+              <div style={S.mMeta}>
+                <span style={S.mMetaH}>Address:</span> {selectedShop.address}<br/>
+                {selectedShop.phone && <><span style={S.mMetaH}>Phone:</span> {selectedShop.phone}<br/></>}
+                {selectedShop.hours && <><span style={S.mMetaH}>Hours:</span> {selectedShop.hours}</>}
+              </div>
+              <div style={S.mDesc}>{selectedShop.notes}</div>
+              <div style={{display:"flex", gap:8, flexWrap:"wrap", marginTop:4}}>
+                <a
+                  href={mapsUrl(selectedShop.address)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{...S.actionBtn, ...S.mapsBtn}}
+                  onClick={e=>e.stopPropagation()}
+                >
+                  📍 Open in Maps
+                </a>
+                {selectedShop.website && (
+                  <a
+                    href={selectedShop.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{...S.actionBtn, ...S.websiteBtn}}
+                    onClick={e=>e.stopPropagation()}
+                  >
+                    🌐 Website
+                  </a>
+                )}
+                <button
+                  style={{...S.actionBtn, background: favorites.includes(selectedShop.id)?"#3D0000":"#1A1A1A", color: favorites.includes(selectedShop.id)?"#FF6B6B":"#777", border: favorites.includes(selectedShop.id)?"1px solid #8B000044":"1px solid #333"}}
+                  onClick={e=>toggleFav(selectedShop.id,e)}
+                >
+                  {favorites.includes(selectedShop.id) ? "♥ Saved" : "♡ Save"}
+                </button>
+              </div>
             </div>
-            <div style={S.mMeta}>
-              <span style={S.mMetaH}>Address:</span> {selectedShop.address}
-              {selectedShop.phone && <><br/><span style={S.mMetaH}>Phone:</span> {selectedShop.phone}</>}
-            </div>
-            <div style={S.mDesc}>{selectedShop.notes}</div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
+
