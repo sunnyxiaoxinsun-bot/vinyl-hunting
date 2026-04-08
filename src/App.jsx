@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { VINYLS, SHOPS, AREAS, ERAS, GENRES, RARITIES } from "./data";
+import { VINTAGE, VSTORES, VSTORE_AREAS, VINTAGE_CATEGORIES, VINTAGE_ERAS, VINTAGE_RARITIES } from "./vintage";
 
 const rarityColor = (r) => {
   if (r === "holy grail") return { bg:"#3D0000", text:"#FF6B6B", border:"#8B0000" };
@@ -9,18 +10,16 @@ const rarityColor = (r) => {
 };
 
 const eraColor = (era) => {
-  const map = { "1930s":"#B45309","1940s":"#92400E","1950s":"#D97706","1960s":"#9333EA","1970s":"#DC2626","1980s":"#2563EB","1990s":"#059669","2000s":"#0891B2","2010s":"#7C3AED","2020s":"#DB2777" };
+  const map = { "1930s":"#B45309","1930s–40s":"#B45309","1940s":"#92400E","1950s–60s":"#D97706","1950s":"#D97706","1960s":"#9333EA","1970s":"#DC2626","1980s":"#2563EB","1990s":"#059669","2000s":"#0891B2","2010s":"#7C3AED","2020s":"#DB2777" };
   return map[era] || "#6B7280";
 };
 
 const isOpenNow = (hoursStr) => {
   if (!hoursStr || hoursStr.toLowerCase().includes("check")) return null;
   const now = new Date();
-  const day = now.getDay(); // 0=Sun
+  const day = now.getDay();
   const hour = now.getHours() + now.getMinutes() / 60;
   const lower = hoursStr.toLowerCase();
-
-  // Parse a time like "11am" or "9pm" to a decimal hour
   const parseTime = (t) => {
     const m = t.trim().match(/^(\d+)(?::(\d+))?(am|pm)$/i);
     if (!m) return null;
@@ -30,31 +29,21 @@ const isOpenNow = (hoursStr) => {
     if (m[3].toLowerCase() === "am" && h === 12) h = 0;
     return h + min / 60;
   };
-
-  // Try to find today's range. We look for patterns like "mon–sat 11am–8pm, sun 12pm–6pm"
   const dayNames = ["sun","mon","tue","wed","thu","fri","sat"];
-  const todayName = dayNames[day];
-
-  // Split by comma to get segments
   const segments = lower.split(",").map(s => s.trim());
   for (const seg of segments) {
-    // Check if this segment covers today
     const rangeMatcher = seg.match(/([a-z]+)[–\-]([a-z]+)/);
     const singleMatcher = seg.match(/^([a-z]+)\s/);
     let covers = false;
-
     if (rangeMatcher) {
       const start = dayNames.indexOf(rangeMatcher[1]);
       const end = dayNames.indexOf(rangeMatcher[2]);
-      if (start !== -1 && end !== -1) {
-        covers = start <= end ? (day >= start && day <= end) : (day >= start || day <= end);
-      }
+      if (start !== -1 && end !== -1) covers = start <= end ? (day >= start && day <= end) : (day >= start || day <= end);
     } else if (singleMatcher) {
       covers = dayNames.indexOf(singleMatcher[1]) === day;
     } else if (seg.startsWith("daily")) {
       covers = true;
     }
-
     if (covers) {
       const timeMatcher = seg.match(/(\d+(?::\d+)?(?:am|pm))[–\-](\d+(?::\d+)?(?:am|pm))/i);
       if (timeMatcher) {
@@ -72,52 +61,54 @@ const mapsUrl = (address) =>
 
 export default function App() {
   const [tab, setTab] = useState("hunt");
+
   const [vinylSearch, setVinylSearch] = useState("");
-  const [shopSearch, setShopSearch] = useState("");
   const [eraFilter, setEraFilter] = useState("All");
   const [genreFilter, setGenreFilter] = useState("All");
   const [rarityFilter, setRarityFilter] = useState("All");
   const [findableOnly, setFindableOnly] = useState(false);
-  const [shopArea, setShopArea] = useState("all");
-  const [selectedVinyl, setSelectedVinyl] = useState(null);
-  const [selectedShop, setSelectedShop] = useState(null);
-  const [shopFavs, setShopFavs] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("shopFavorites") || "[]"); }
-    catch { return []; }
-  });
-  const [vinylFavs, setVinylFavs] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("vinylFavorites") || "[]"); }
-    catch { return []; }
-  });
-  const [favOnly, setFavOnly] = useState(false);
   const [vinylFavOnly, setVinylFavOnly] = useState(false);
+  const [selectedVinyl, setSelectedVinyl] = useState(null);
 
-  useEffect(() => {
-    try { localStorage.setItem("shopFavorites", JSON.stringify(shopFavs)); }
-    catch {}
-  }, [shopFavs]);
+  const [shopSearch, setShopSearch] = useState("");
+  const [shopArea, setShopArea] = useState("all");
+  const [shopFavOnly, setShopFavOnly] = useState(false);
+  const [selectedShop, setSelectedShop] = useState(null);
 
-  useEffect(() => {
-    try { localStorage.setItem("vinylFavorites", JSON.stringify(vinylFavs)); }
-    catch {}
-  }, [vinylFavs]);
+  const [vintageSearch, setVintageSearch] = useState("");
+  const [vCatFilter, setVCatFilter] = useState("All");
+  const [vEraFilter, setVEraFilter] = useState("All");
+  const [vRarFilter, setVRarFilter] = useState("All");
+  const [vFindableOnly, setVFindableOnly] = useState(false);
+  const [vFavOnly, setVFavOnly] = useState(false);
+  const [selectedVintage, setSelectedVintage] = useState(null);
 
-  const toggleShopFav = (id, e) => {
+  const [vstoreSearch, setVstoreSearch] = useState("");
+  const [vstoreArea, setVstoreArea] = useState("all");
+  const [vstoreFavOnly, setVstoreFavOnly] = useState(false);
+  const [selectedVstore, setSelectedVstore] = useState(null);
+
+  const [shopFavs, setShopFavs] = useState(() => { try { return JSON.parse(localStorage.getItem("shopFavs")||"[]"); } catch { return []; } });
+  const [vinylFavs, setVinylFavs] = useState(() => { try { return JSON.parse(localStorage.getItem("vinylFavs")||"[]"); } catch { return []; } });
+  const [vintageFavs, setVintageFavs] = useState(() => { try { return JSON.parse(localStorage.getItem("vintageFavs")||"[]"); } catch { return []; } });
+  const [vstoreFavs, setVstoreFavs] = useState(() => { try { return JSON.parse(localStorage.getItem("vstoreFavs")||"[]"); } catch { return []; } });
+
+  useEffect(() => { try { localStorage.setItem("shopFavs", JSON.stringify(shopFavs)); } catch {} }, [shopFavs]);
+  useEffect(() => { try { localStorage.setItem("vinylFavs", JSON.stringify(vinylFavs)); } catch {} }, [vinylFavs]);
+  useEffect(() => { try { localStorage.setItem("vintageFavs", JSON.stringify(vintageFavs)); } catch {} }, [vintageFavs]);
+  useEffect(() => { try { localStorage.setItem("vstoreFavs", JSON.stringify(vstoreFavs)); } catch {} }, [vstoreFavs]);
+
+  const toggle = (setter) => (id, e) => {
     e.stopPropagation();
-    setShopFavs(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
-  };
-
-  const toggleVinylFav = (id, e) => {
-    e.stopPropagation();
-    setVinylFavs(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
+    setter(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]);
   };
 
   const filteredVinyls = VINYLS.filter(v => {
     const s = vinylSearch.toLowerCase();
     return (!s || v.artist.toLowerCase().includes(s) || v.title.toLowerCase().includes(s))
-      && (eraFilter === "All" || v.era === eraFilter)
-      && (genreFilter === "All" || v.genre.toLowerCase().includes(genreFilter.toLowerCase()))
-      && (rarityFilter === "All" || v.rarity === rarityFilter)
+      && (eraFilter==="All" || v.era===eraFilter)
+      && (genreFilter==="All" || v.genre.toLowerCase().includes(genreFilter.toLowerCase()))
+      && (rarityFilter==="All" || v.rarity===rarityFilter)
       && (!findableOnly || v.findable)
       && (!vinylFavOnly || vinylFavs.includes(v.id));
   });
@@ -125,8 +116,25 @@ export default function App() {
   const filteredShops = SHOPS.filter(s => {
     const q = shopSearch.toLowerCase();
     return (!q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.specialty.toLowerCase().includes(q))
-      && (shopArea === "all" || s.area === shopArea)
-      && (!favOnly || shopFavs.includes(s.id));
+      && (shopArea==="all" || s.area===shopArea)
+      && (!shopFavOnly || shopFavs.includes(s.id));
+  });
+
+  const filteredVintage = VINTAGE.filter(v => {
+    const s = vintageSearch.toLowerCase();
+    return (!s || v.name.toLowerCase().includes(s) || v.brand.toLowerCase().includes(s) || v.category.toLowerCase().includes(s))
+      && (vCatFilter==="All" || v.category===vCatFilter)
+      && (vEraFilter==="All" || v.era===vEraFilter)
+      && (vRarFilter==="All" || v.rarity===vRarFilter)
+      && (!vFindableOnly || v.findable)
+      && (!vFavOnly || vintageFavs.includes(v.id));
+  });
+
+  const filteredVstores = VSTORES.filter(s => {
+    const q = vstoreSearch.toLowerCase();
+    return (!q || s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q) || s.specialty.toLowerCase().includes(q))
+      && (vstoreArea==="all" || s.area===vstoreArea)
+      && (!vstoreFavOnly || vstoreFavs.includes(s.id));
   });
 
   const S = {
@@ -137,7 +145,7 @@ export default function App() {
     logoText:{ fontSize:17, letterSpacing:"0.06em", color:"#FFF" },
     logoSub:{ fontSize:9, color:"#555", letterSpacing:"0.12em", marginTop:1 },
     tabs:{ display:"flex" },
-    tab:(a)=>({ flex:1, padding:"9px 0", fontSize:9, letterSpacing:"0.12em", textAlign:"center", cursor:"pointer", background:"transparent", border:"none", borderBottom:a?"2px solid #FF4444":"2px solid transparent", color:a?"#FF4444":"#555", fontFamily:"inherit", textTransform:"uppercase" }),
+    tab:(a)=>({ flex:1, padding:"9px 0", fontSize:8, letterSpacing:"0.1em", textAlign:"center", cursor:"pointer", background:"transparent", border:"none", borderBottom:a?"2px solid #FF4444":"2px solid transparent", color:a?"#FF4444":"#555", fontFamily:"inherit", textTransform:"uppercase" }),
     body:{ padding:"14px 14px 80px" },
     search:{ width:"100%", background:"#111", border:"1px solid #222", borderRadius:6, padding:"10px 12px", color:"#E5E5E5", fontSize:13, fontFamily:"inherit", outline:"none", boxSizing:"border-box", marginBottom:10 },
     filterRow:{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap" },
@@ -146,7 +154,7 @@ export default function App() {
     countLine:{ fontSize:9, color:"#444", letterSpacing:"0.1em", marginBottom:10 },
     card:{ background:"#111", border:"1px solid #1E1E1E", borderRadius:8, padding:"12px", marginBottom:7, cursor:"pointer", position:"relative" },
     rank:{ fontSize:9, color:"#333", letterSpacing:"0.1em", marginBottom:3 },
-    cardTitle:{ fontSize:14, color:"#FFF", marginBottom:2, lineHeight:1.3 },
+    cardTitle:{ fontSize:14, color:"#FFF", marginBottom:2, lineHeight:1.3, paddingRight:24 },
     cardSub:{ fontSize:11, color:"#666", marginBottom:8 },
     pills:{ display:"flex", gap:5, flexWrap:"wrap", alignItems:"center" },
     pill:(r)=>({ fontSize:8, padding:"3px 7px", borderRadius:99, background:rarityColor(r).bg, color:rarityColor(r).text, border:`1px solid ${rarityColor(r).border}`, letterSpacing:"0.08em", textTransform:"uppercase" }),
@@ -177,6 +185,44 @@ export default function App() {
     websiteBtn:{ background:"#1A1A1A", color:"#CCC", border:"1px solid #333" },
   };
 
+  const SaveBtn = ({ isFav, onToggle }) => (
+    <button style={{...S.actionBtn, background:isFav?"#3D0000":"#1A1A1A", color:isFav?"#FF6B6B":"#777", border:isFav?"1px solid #8B000044":"1px solid #333"}} onClick={onToggle}>
+      {isFav ? "♥ Saved" : "♡ Save"}
+    </button>
+  );
+
+  const ShopModal = ({ shop, favs, favSetter, onClose }) => {
+    const open = isOpenNow(shop.hours);
+    return (
+      <div style={S.modal} onClick={onClose}>
+        <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
+          <button style={S.closeBtn} onClick={onClose}>CLOSE ✕</button>
+          <div style={S.stars}>
+            <span style={S.starNum}>{shop.rating}</span>
+            <span style={{fontSize:12,color:"#FBBF24"}}>{"★".repeat(Math.floor(shop.rating))}</span>
+            {open !== null && <span style={{...S.openBadge(open), marginLeft:6}}>{open?"OPEN NOW":"CLOSED"}</span>}
+          </div>
+          <div style={{...S.mTitle, marginTop:8}}>{shop.name}</div>
+          <div style={{...S.shopCity, fontSize:12, marginBottom:12}}>{shop.city}</div>
+          <div style={{...S.pills, marginBottom:12}}>
+            <span style={{fontSize:9,padding:"4px 9px",borderRadius:99,background:"#1A1A1A",color:"#666",border:"1px solid #222",letterSpacing:"0.06em"}}>{shop.specialty}</span>
+          </div>
+          <div style={S.mMeta}>
+            <span style={S.mMetaH}>Address:</span> {shop.address}<br/>
+            {shop.phone && <><span style={S.mMetaH}>Phone:</span> {shop.phone}<br/></>}
+            {shop.hours && <><span style={S.mMetaH}>Hours:</span> {shop.hours}</>}
+          </div>
+          <div style={S.mDesc}>{shop.notes}</div>
+          <div style={{display:"flex", gap:8, flexWrap:"wrap", marginTop:4}}>
+            <a href={mapsUrl(shop.address)} target="_blank" rel="noopener noreferrer" style={{...S.actionBtn,...S.mapsBtn}} onClick={e=>e.stopPropagation()}>📍 Open in Maps</a>
+            {shop.website && <a href={shop.website} target="_blank" rel="noopener noreferrer" style={{...S.actionBtn,...S.websiteBtn}} onClick={e=>e.stopPropagation()}>🌐 Website</a>}
+            <SaveBtn isFav={favs.includes(shop.id)} onToggle={e=>toggle(favSetter)(shop.id,e)} />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={S.app}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
@@ -190,35 +236,28 @@ export default function App() {
           </div>
         </div>
         <div style={S.tabs}>
-          {[["hunt","THE 500"],["shops","SHOPS"]].map(([k,l])=>(
+          {[["hunt","RECORDS"],["shops","REC SHOPS"],["vintage","TOP 100"],["vstores","VINTAGE"]].map(([k,l])=>(
             <button key={k} style={S.tab(tab===k)} onClick={()=>setTab(k)}>{l}</button>
           ))}
         </div>
       </div>
 
       <div style={S.body}>
+
         {tab==="hunt" && <>
           <input style={S.search} placeholder="Search artist or title..." value={vinylSearch} onChange={e=>setVinylSearch(e.target.value)} />
           <div style={S.filterRow}>
-            <select style={S.sel} value={eraFilter} onChange={e=>setEraFilter(e.target.value)}>
-              {ERAS.map(e=><option key={e}>{e}</option>)}
-            </select>
-            <select style={S.sel} value={genreFilter} onChange={e=>setGenreFilter(e.target.value)}>
-              {GENRES.map(g=><option key={g}>{g}</option>)}
-            </select>
-            <select style={S.sel} value={rarityFilter} onChange={e=>setRarityFilter(e.target.value)}>
-              {RARITIES.map(r=><option key={r} value={r}>{r==="All"?"All rarities":r}</option>)}
-            </select>
+            <select style={S.sel} value={eraFilter} onChange={e=>setEraFilter(e.target.value)}>{ERAS.map(e=><option key={e}>{e}</option>)}</select>
+            <select style={S.sel} value={genreFilter} onChange={e=>setGenreFilter(e.target.value)}>{GENRES.map(g=><option key={g}>{g}</option>)}</select>
+            <select style={S.sel} value={rarityFilter} onChange={e=>setRarityFilter(e.target.value)}>{RARITIES.map(r=><option key={r} value={r}>{r==="All"?"All rarities":r}</option>)}</select>
             <button style={S.toggle(findableOnly)} onClick={()=>setFindableOnly(!findableOnly)}>FINDABLE</button>
             <button style={S.toggle(vinylFavOnly)} onClick={()=>setVinylFavOnly(!vinylFavOnly)}>♥ SAVED</button>
           </div>
           <div style={S.countLine}>{filteredVinyls.length} / {VINYLS.length} RECORDS</div>
           {filteredVinyls.map(v=>(
             <div key={v.id} style={S.card} onClick={()=>setSelectedVinyl(v)}>
-              <button style={S.favBtn(vinylFavs.includes(v.id))} onClick={e=>toggleVinylFav(v.id,e)}>
-                {vinylFavs.includes(v.id) ? "♥" : "♡"}
-              </button>
-              <div style={{...S.rank, paddingRight:24}}>#{v.rank}</div>
+              <button style={S.favBtn(vinylFavs.includes(v.id))} onClick={e=>toggle(setVinylFavs)(v.id,e)}>{vinylFavs.includes(v.id)?"♥":"♡"}</button>
+              <div style={S.rank}>#{v.rank}</div>
               <div style={S.cardTitle}>{v.title}</div>
               <div style={S.cardSub}>{v.artist} · {v.label} · {v.year}</div>
               <div style={S.pills}>
@@ -233,22 +272,14 @@ export default function App() {
 
         {tab==="shops" && <>
           <input style={S.search} placeholder="Search name, city, or genre..." value={shopSearch} onChange={e=>setShopSearch(e.target.value)} />
-          <div style={S.areaTabs}>
-            {AREAS.map(({key,label})=>(
-              <button key={key} style={S.areaTab(shopArea===key)} onClick={()=>setShopArea(key)}>{label}</button>
-            ))}
-          </div>
-          <div style={S.filterRow}>
-            <button style={S.toggle(favOnly)} onClick={()=>setFavOnly(!favOnly)}>♥ SAVED</button>
-          </div>
+          <div style={S.areaTabs}>{AREAS.map(({key,label})=><button key={key} style={S.areaTab(shopArea===key)} onClick={()=>setShopArea(key)}>{label}</button>)}</div>
+          <div style={S.filterRow}><button style={S.toggle(shopFavOnly)} onClick={()=>setShopFavOnly(!shopFavOnly)}>♥ SAVED</button></div>
           <div style={S.countLine}>{filteredShops.length} / {SHOPS.length} SHOPS</div>
           {filteredShops.map(s=>{
             const open = isOpenNow(s.hours);
             return (
               <div key={s.id} style={S.shopCard} onClick={()=>setSelectedShop(s)}>
-                <button style={S.favBtn(shopFavs.includes(s.id))} onClick={e=>toggleShopFav(s.id,e)}>
-                  {shopFavs.includes(s.id) ? "♥" : "♡"}
-                </button>
+                <button style={S.favBtn(shopFavs.includes(s.id))} onClick={e=>toggle(setShopFavs)(s.id,e)}>{shopFavs.includes(s.id)?"♥":"♡"}</button>
                 <div style={S.shopName}>{s.name}</div>
                 <div style={S.shopCity}>{s.city}</div>
                 <div style={{...S.pills, marginBottom:7}}>
@@ -256,10 +287,56 @@ export default function App() {
                   {open !== null && <span style={S.openBadge(open)}>{open?"OPEN NOW":"CLOSED"}</span>}
                 </div>
                 <div style={S.shopNotes}>{s.notes}</div>
-                <div style={S.stars}>
-                  <span style={S.starNum}>{s.rating}</span>
-                  <span style={{fontSize:11,color:"#FBBF24"}}>{"★".repeat(Math.floor(s.rating))}{"☆".repeat(5-Math.floor(s.rating))}</span>
+                <div style={S.stars}><span style={S.starNum}>{s.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"★".repeat(Math.floor(s.rating))}{"☆".repeat(5-Math.floor(s.rating))}</span></div>
+              </div>
+            );
+          })}
+        </>}
+
+        {tab==="vintage" && <>
+          <input style={S.search} placeholder="Search name, brand, or category..." value={vintageSearch} onChange={e=>setVintageSearch(e.target.value)} />
+          <div style={S.filterRow}>
+            <select style={S.sel} value={vCatFilter} onChange={e=>setVCatFilter(e.target.value)}>{VINTAGE_CATEGORIES.map(c=><option key={c}>{c}</option>)}</select>
+            <select style={S.sel} value={vEraFilter} onChange={e=>setVEraFilter(e.target.value)}>{VINTAGE_ERAS.map(e=><option key={e}>{e}</option>)}</select>
+            <select style={S.sel} value={vRarFilter} onChange={e=>setVRarFilter(e.target.value)}>{VINTAGE_RARITIES.map(r=><option key={r} value={r}>{r==="All"?"All rarities":r}</option>)}</select>
+            <button style={S.toggle(vFindableOnly)} onClick={()=>setVFindableOnly(!vFindableOnly)}>FINDABLE</button>
+            <button style={S.toggle(vFavOnly)} onClick={()=>setVFavOnly(!vFavOnly)}>♥ SAVED</button>
+          </div>
+          <div style={S.countLine}>{filteredVintage.length} / {VINTAGE.length} PIECES</div>
+          {filteredVintage.map(v=>(
+            <div key={v.id} style={S.card} onClick={()=>setSelectedVintage(v)}>
+              <button style={S.favBtn(vintageFavs.includes(v.id))} onClick={e=>toggle(setVintageFavs)(v.id,e)}>{vintageFavs.includes(v.id)?"♥":"♡"}</button>
+              <div style={S.rank}>#{v.rank}</div>
+              <div style={S.cardTitle}>{v.name}</div>
+              <div style={S.cardSub}>{v.brand} · {v.era}</div>
+              <div style={S.pills}>
+                <span style={S.pill(v.rarity)}>{v.rarity}</span>
+                <span style={S.era(v.era)}>{v.era}</span>
+                <span style={{fontSize:8,color:"#444"}}>{v.category}</span>
+                {v.findable && <span style={S.findPill}>FINDABLE</span>}
+              </div>
+            </div>
+          ))}
+        </>}
+
+        {tab==="vstores" && <>
+          <input style={S.search} placeholder="Search name, city, or specialty..." value={vstoreSearch} onChange={e=>setVstoreSearch(e.target.value)} />
+          <div style={S.areaTabs}>{VSTORE_AREAS.map(({key,label})=><button key={key} style={S.areaTab(vstoreArea===key)} onClick={()=>setVstoreArea(key)}>{label}</button>)}</div>
+          <div style={S.filterRow}><button style={S.toggle(vstoreFavOnly)} onClick={()=>setVstoreFavOnly(!vstoreFavOnly)}>♥ SAVED</button></div>
+          <div style={S.countLine}>{filteredVstores.length} / {VSTORES.length} STORES</div>
+          {filteredVstores.map(s=>{
+            const open = isOpenNow(s.hours);
+            return (
+              <div key={s.id} style={S.shopCard} onClick={()=>setSelectedVstore(s)}>
+                <button style={S.favBtn(vstoreFavs.includes(s.id))} onClick={e=>toggle(setVstoreFavs)(s.id,e)}>{vstoreFavs.includes(s.id)?"♥":"♡"}</button>
+                <div style={S.shopName}>{s.name}</div>
+                <div style={S.shopCity}>{s.city}</div>
+                <div style={{...S.pills, marginBottom:7}}>
+                  <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:"#1A1A1A",color:"#555",border:"1px solid #222"}}>{s.specialty}</span>
+                  {open !== null && <span style={S.openBadge(open)}>{open?"OPEN NOW":"CLOSED"}</span>}
                 </div>
+                <div style={S.shopNotes}>{s.notes}</div>
+                <div style={S.stars}><span style={S.starNum}>{s.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"★".repeat(Math.floor(s.rating))}{"☆".repeat(5-Math.floor(s.rating))}</span></div>
               </div>
             );
           })}
@@ -273,7 +350,7 @@ export default function App() {
             <div style={S.mRank}>#{selectedVinyl.rank} OF {VINYLS.length}</div>
             <div style={S.mTitle}>{selectedVinyl.title}</div>
             <div style={S.mArtist}>{selectedVinyl.artist}</div>
-            <div style={{...S.pills, marginBottom:12}}>
+            <div style={{...S.pills,marginBottom:12}}>
               <span style={S.pill(selectedVinyl.rarity)}>{selectedVinyl.rarity}</span>
               <span style={S.era(selectedVinyl.era)}>{selectedVinyl.era}</span>
               {selectedVinyl.findable && <span style={S.findPill}>CRATE-FINDABLE</span>}
@@ -285,73 +362,36 @@ export default function App() {
             </div>
             <div style={S.mDesc}>{selectedVinyl.description}</div>
             <div style={S.mValue}>💰 Value range: {selectedVinyl.value}</div>
-            <div style={{marginTop:12}}>
-              <button
-                style={{...S.actionBtn, background: vinylFavs.includes(selectedVinyl.id)?"#3D0000":"#1A1A1A", color: vinylFavs.includes(selectedVinyl.id)?"#FF6B6B":"#777", border: vinylFavs.includes(selectedVinyl.id)?"1px solid #8B000044":"1px solid #333"}}
-                onClick={e=>toggleVinylFav(selectedVinyl.id,e)}
-              >
-                {vinylFavs.includes(selectedVinyl.id) ? "♥ Saved" : "♡ Save"}
-              </button>
-            </div>
+            <div style={{marginTop:12}}><SaveBtn isFav={vinylFavs.includes(selectedVinyl.id)} onToggle={e=>toggle(setVinylFavs)(selectedVinyl.id,e)} /></div>
           </div>
         </div>
       )}
 
-      {selectedShop && (()=>{
-        const open = isOpenNow(selectedShop.hours);
-        return (
-          <div style={S.modal} onClick={()=>setSelectedShop(null)}>
-            <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-              <button style={S.closeBtn} onClick={()=>setSelectedShop(null)}>CLOSE ✕</button>
-              <div style={S.stars}>
-                <span style={S.starNum}>{selectedShop.rating}</span>
-                <span style={{fontSize:12,color:"#FBBF24"}}>{"★".repeat(Math.floor(selectedShop.rating))}</span>
-                {open !== null && <span style={{...S.openBadge(open), marginLeft:6}}>{open?"OPEN NOW":"CLOSED"}</span>}
-              </div>
-              <div style={{...S.mTitle, marginTop:8}}>{selectedShop.name}</div>
-              <div style={{...S.shopCity, fontSize:12, marginBottom:12}}>{selectedShop.city}</div>
-              <div style={{...S.pills, marginBottom:12}}>
-                <span style={{fontSize:9,padding:"4px 9px",borderRadius:99,background:"#1A1A1A",color:"#666",border:"1px solid #222",letterSpacing:"0.06em"}}>{selectedShop.specialty}</span>
-              </div>
-              <div style={S.mMeta}>
-                <span style={S.mMetaH}>Address:</span> {selectedShop.address}<br/>
-                {selectedShop.phone && <><span style={S.mMetaH}>Phone:</span> {selectedShop.phone}<br/></>}
-                {selectedShop.hours && <><span style={S.mMetaH}>Hours:</span> {selectedShop.hours}</>}
-              </div>
-              <div style={S.mDesc}>{selectedShop.notes}</div>
-              <div style={{display:"flex", gap:8, flexWrap:"wrap", marginTop:4}}>
-                <a
-                  href={mapsUrl(selectedShop.address)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{...S.actionBtn, ...S.mapsBtn}}
-                  onClick={e=>e.stopPropagation()}
-                >
-                  📍 Open in Maps
-                </a>
-                {selectedShop.website && (
-                  <a
-                    href={selectedShop.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{...S.actionBtn, ...S.websiteBtn}}
-                    onClick={e=>e.stopPropagation()}
-                  >
-                    🌐 Website
-                  </a>
-                )}
-                <button
-                  style={{...S.actionBtn, background: shopFavs.includes(selectedShop.id)?"#3D0000":"#1A1A1A", color: shopFavs.includes(selectedShop.id)?"#FF6B6B":"#777", border: shopFavs.includes(selectedShop.id)?"1px solid #8B000044":"1px solid #333"}}
-                  onClick={e=>toggleShopFav(selectedShop.id,e)}
-                >
-                  {shopFavs.includes(selectedShop.id) ? "♥ Saved" : "♡ Save"}
-                </button>
-              </div>
+      {selectedVintage && (
+        <div style={S.modal} onClick={()=>setSelectedVintage(null)}>
+          <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
+            <button style={S.closeBtn} onClick={()=>setSelectedVintage(null)}>CLOSE ✕</button>
+            <div style={S.mRank}>#{selectedVintage.rank} OF {VINTAGE.length}</div>
+            <div style={S.mTitle}>{selectedVintage.name}</div>
+            <div style={S.mArtist}>{selectedVintage.brand}</div>
+            <div style={{...S.pills,marginBottom:12}}>
+              <span style={S.pill(selectedVintage.rarity)}>{selectedVintage.rarity}</span>
+              <span style={S.era(selectedVintage.era)}>{selectedVintage.era}</span>
+              {selectedVintage.findable && <span style={S.findPill}>FINDABLE</span>}
             </div>
+            <div style={S.mMeta}>
+              <span style={S.mMetaH}>Category:</span> {selectedVintage.category}<br/>
+              <span style={S.mMetaH}>Era:</span> {selectedVintage.era}
+            </div>
+            <div style={S.mDesc}>{selectedVintage.description}</div>
+            <div style={S.mValue}>💰 Value range: {selectedVintage.value}</div>
+            <div style={{marginTop:12}}><SaveBtn isFav={vintageFavs.includes(selectedVintage.id)} onToggle={e=>toggle(setVintageFavs)(selectedVintage.id,e)} /></div>
           </div>
-        );
-      })()}
+        </div>
+      )}
+
+      {selectedShop && <ShopModal shop={selectedShop} favs={shopFavs} favSetter={setShopFavs} onClose={()=>setSelectedShop(null)} />}
+      {selectedVstore && <ShopModal shop={selectedVstore} favs={vstoreFavs} favSetter={setVstoreFavs} onClose={()=>setSelectedVstore(null)} />}
     </div>
   );
 }
-
