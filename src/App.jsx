@@ -682,7 +682,22 @@ const [filmScriptOnly, setFilmScriptOnly] = useState(false);
               <select style={S.sel} value={filmCountryFilter} onChange={e=>{setFilmCountryFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_COUNTRIES.map(c=><option key={c} value={c}>{c==="All"?"COUNTRY":c}</option>)}
               </select>
-<button style={S.toggle(filmFavOnly)} onClick={()=>{setFilmFavOnly(!filmFavOnly);setFilmPage(0);}}>{filmFavOnly ? "\u2665" : "\u2661"} SAVED</button>
+<select style={S.sel} value={filmAwardFilter} onChange={e=>{setFilmAwardFilter(e.target.value);setFilmPage(0);}}>
+  <option value="All">AWARDS</option>
+  <option value="awarded">Has Award</option>
+</select>
+<select style={S.sel} value={filmYearFilter} onChange={e=>{setFilmYearFilter(e.target.value);setFilmPage(0);}}>
+  <option value="All">DECADE</option>
+  <option value="2020s">2020s</option>
+  <option value="2010s">2010s</option>
+  <option value="2000s">2000s</option>
+  <option value="1990s">1990s</option>
+  <option value="1980s">1980s</option>
+  <option value="1970s">1970s</option>
+  <option value="pre-1970">Pre-1970</option>
+</select>
+<button style={S.toggle(filmScriptOnly)} onClick={()=>{setFilmScriptOnly(!filmScriptOnly);setFilmPage(0);}}>SCRIPT</button>
+              <button style={S.toggle(filmFavOnly)} onClick={()=>{setFilmFavOnly(!filmFavOnly);setFilmPage(0);}}>{filmFavOnly ? "\u2665" : "\u2661"} SAVED</button>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <span style={S.countLine}>{filteredFilms.length} films  {filmTotalPages > 1 ? "\u00b7 p." + (safeFilmPage+1) + "/" + filmTotalPages : ""}</span>
