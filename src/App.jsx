@@ -251,6 +251,9 @@ const [filmScriptOnly, setFilmScriptOnly] = useState(false);
       && (filmGenreFilter==="All" || f.genre.toLowerCase().includes(filmGenreFilter.toLowerCase()))
       && (filmCountryFilter==="All" || f.country.toLowerCase().includes(filmCountryFilter.toLowerCase()))
       && (!filmFavOnly || filmFavs.includes(f.id));
+&& (filmAwardFilter==="All" || (filmAwardFilter==="awarded" && f.awards))
+&& (filmYearFilter==="All" || (filmYearFilter==="2020s" && f.year>=2020) || (filmYearFilter==="2010s" && f.year>=2010 && f.year<2020) || (filmYearFilter==="2000s" && f.year>=2000 && f.year<2010) || (filmYearFilter==="1990s" && f.year>=1990 && f.year<2000) || (filmYearFilter==="1980s" && f.year>=1980 && f.year<1990) || (filmYearFilter==="1970s" && f.year>=1970 && f.year<1980) || (filmYearFilter==="pre-1970" && f.year<1970))
+&& (!filmScriptOnly || SCREENPLAYS[f.id]);
   });
   const filmTotalPages = Math.ceil(filteredFilms.length / FILMS_PER_PAGE);
   const safeFilmPage = Math.min(filmPage, Math.max(0, filmTotalPages - 1));
