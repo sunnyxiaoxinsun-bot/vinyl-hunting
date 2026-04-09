@@ -303,13 +303,13 @@ export default function App() {
     <div style={S.header}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
       {section && (
-        <button style={S.backBtn} onClick={() => setSection(null)}>← DEAD STOCK</button>
+        <button style={S.backBtn} onClick={() => setSection(null)}>← ORIGINAL ISSUE</button>
       )}
       {!section && (
         <div style={S.logoRow}>
           <HangTag size={22} color="#FF4444" />
           <div>
-            <div style={S.logoText}>DEAD STOCK</div>
+            <div style={S.logoText}>ORIGINAL ISSUE</div>
             <div style={S.logoSub}>COLLECTOR'S FIELD GUIDE · WORLDWIDE</div>
           </div>
         </div>
@@ -598,3 +598,4 @@ export default function App() {
     </div>
   );
 }
+
