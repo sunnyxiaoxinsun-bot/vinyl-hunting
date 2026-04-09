@@ -231,12 +231,12 @@ export default function App() {
         <div style={S.logoRow}>
           <div style={S.disc} />
           <div>
-            <div style={S.logoText}>VINYL HUNTER</div>
+            <div style={S.logoText}>GRAIL LOG</div>
             <div style={S.logoSub}>COLLECTOR'S FIELD GUIDE · WORLDWIDE</div>
           </div>
         </div>
         <div style={S.tabs}>
-          {[["hunt","RECORDS"],["shops","REC SHOPS"],["vintage","TOP 100"],["vstores","VINTAGE"]].map(([k,l])=>(
+          {[["hunt","RECORDS"],["shops","REC SHOPS"],["vintage","VINTAGE"],["vstores","VTGE SHOPS"]].map(([k,l])=>(
             <button key={k} style={S.tab(tab===k)} onClick={()=>setTab(k)}>{l}</button>
           ))}
         </div>
