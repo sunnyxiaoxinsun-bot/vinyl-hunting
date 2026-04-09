@@ -169,8 +169,8 @@ export default function App() {
   const [filmCountryFilter, setFilmCountryFilter] = useState("All");
   const [filmFavOnly, setFilmFavOnly] = useState(false);
   const [filmAwardFilter, setFilmAwardFilter] = useState("All");
-const [filmYearFilter, setFilmYearFilter] = useState("All");
-const [filmScriptOnly, setFilmScriptOnly] = useState(false);
+  const [filmYearFilter, setFilmYearFilter] = useState("All");
+  const [filmScriptOnly, setFilmScriptOnly] = useState(false);
   const [filmPage, setFilmPage] = useState(0);
   const FILMS_PER_PAGE = 50;
   const [selectedFilm, setSelectedFilm] = useState(null);
@@ -250,10 +250,10 @@ const [filmScriptOnly, setFilmScriptOnly] = useState(false);
       && (filmEraFilter==="All" || f.era===filmEraFilter)
       && (filmGenreFilter==="All" || f.genre.toLowerCase().includes(filmGenreFilter.toLowerCase()))
       && (filmCountryFilter==="All" || f.country.toLowerCase().includes(filmCountryFilter.toLowerCase()))
-      && (!filmFavOnly || filmFavs.includes(f.id));
-&& (filmAwardFilter==="All" || (filmAwardFilter==="awarded" && f.awards))
-&& (filmYearFilter==="All" || (filmYearFilter==="2020s" && f.year>=2020) || (filmYearFilter==="2010s" && f.year>=2010 && f.year<2020) || (filmYearFilter==="2000s" && f.year>=2000 && f.year<2010) || (filmYearFilter==="1990s" && f.year>=1990 && f.year<2000) || (filmYearFilter==="1980s" && f.year>=1980 && f.year<1990) || (filmYearFilter==="1970s" && f.year>=1970 && f.year<1980) || (filmYearFilter==="pre-1970" && f.year<1970))
-&& (!filmScriptOnly || SCREENPLAYS[f.id]);
+      && (!filmFavOnly || filmFavs.includes(f.id))
+      && (filmAwardFilter==="All" || (f.awards && f.awards.length > 0))
+      && (filmYearFilter==="All" || (filmYearFilter==="2020s" && f.year>=2020) || (filmYearFilter==="2010s" && f.year>=2010 && f.year<2020) || (filmYearFilter==="2000s" && f.year>=2000 && f.year<2010) || (filmYearFilter==="1990s" && f.year>=1990 && f.year<2000) || (filmYearFilter==="1980s" && f.year>=1980 && f.year<1990) || (filmYearFilter==="1970s" && f.year>=1970 && f.year<1980) || (filmYearFilter==="pre-1970" && f.year<1970))
+      && (!filmScriptOnly || SCREENPLAYS[f.id]);
   });
   const filmTotalPages = Math.ceil(filteredFilms.length / FILMS_PER_PAGE);
   const safeFilmPage = Math.min(filmPage, Math.max(0, filmTotalPages - 1));
@@ -682,22 +682,22 @@ const [filmScriptOnly, setFilmScriptOnly] = useState(false);
               <select style={S.sel} value={filmCountryFilter} onChange={e=>{setFilmCountryFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_COUNTRIES.map(c=><option key={c} value={c}>{c==="All"?"COUNTRY":c}</option>)}
               </select>
-<select style={S.sel} value={filmAwardFilter} onChange={e=>{setFilmAwardFilter(e.target.value);setFilmPage(0);}}>
-  <option value="All">AWARDS</option>
-  <option value="awarded">Has Award</option>
-</select>
-<select style={S.sel} value={filmYearFilter} onChange={e=>{setFilmYearFilter(e.target.value);setFilmPage(0);}}>
-  <option value="All">DECADE</option>
-  <option value="2020s">2020s</option>
-  <option value="2010s">2010s</option>
-  <option value="2000s">2000s</option>
-  <option value="1990s">1990s</option>
-  <option value="1980s">1980s</option>
-  <option value="1970s">1970s</option>
-  <option value="pre-1970">Pre-1970</option>
-</select>
-<button style={S.toggle(filmScriptOnly)} onClick={()=>{setFilmScriptOnly(!filmScriptOnly);setFilmPage(0);}}>SCRIPT</button>
               <button style={S.toggle(filmFavOnly)} onClick={()=>{setFilmFavOnly(!filmFavOnly);setFilmPage(0);}}>{filmFavOnly ? "\u2665" : "\u2661"} SAVED</button>
+              <select style={S.sel} value={filmAwardFilter} onChange={e=>{setFilmAwardFilter(e.target.value);setFilmPage(0);}}>
+                <option value="All">AWARDS</option>
+                <option value="awarded">Has Award</option>
+              </select>
+              <select style={S.sel} value={filmYearFilter} onChange={e=>{setFilmYearFilter(e.target.value);setFilmPage(0);}}>
+                <option value="All">DECADE</option>
+                <option value="2020s">2020s</option>
+                <option value="2010s">2010s</option>
+                <option value="2000s">2000s</option>
+                <option value="1990s">1990s</option>
+                <option value="1980s">1980s</option>
+                <option value="1970s">1970s</option>
+                <option value="pre-1970">Pre-1970</option>
+              </select>
+              <button style={S.toggle(filmScriptOnly)} onClick={()=>{setFilmScriptOnly(!filmScriptOnly);setFilmPage(0);}}>SCRIPT</button>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
               <span style={S.countLine}>{filteredFilms.length} films  {filmTotalPages > 1 ? "\u00b7 p." + (safeFilmPage+1) + "/" + filmTotalPages : ""}</span>
@@ -710,7 +710,7 @@ const [filmScriptOnly, setFilmScriptOnly] = useState(false);
             </div>
             {pagedFilms.map(f=>(
               <div key={f.id} style={S.card} onClick={()=>setSelectedFilm(f)}>
-                <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>{e.stopPropagation();e.preventDefault();toggle(setFilmFavs)(f.id,e);}}>{filmFavs.includes(f.id)?"\u2665":"\u2661"}</button>
+                <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>toggle(setFilmFavs)(f.id,e)}>{filmFavs.includes(f.id)?"\u2665":"\u2661"}</button>
                 <div style={S.rank}>#{f.rank}</div>
                 <div style={S.cardTitle}>{f.title}</div>
                 <div style={S.cardSub}>{f.director}  {f.year}  {f.country}</div>
