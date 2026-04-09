@@ -141,7 +141,7 @@ export default function App() {
     app:{ background:"#0A0A0A", minHeight:"100vh", fontFamily:"'Space Mono','Courier New',monospace", color:"#E5E5E5", maxWidth:480, margin:"0 auto" },
     header:{ background:"#0A0A0A", borderBottom:"1px solid #1E1E1E", padding:"14px 16px 0", position:"sticky", top:0, zIndex:50 },
     logoRow:{ display:"flex", alignItems:"center", gap:10, marginBottom:12 },
-    disc:{ width:30, height:30, borderRadius:"50%", background:"radial-gradient(circle at 50% 50%, #FF4444 0%, #FF4444 8%, #0A0A0A 8%, #0A0A0A 20%, #1a1a1a 20%, #1a1a1a 40%, #111 40%, #111 60%, #1a1a1a 60%, #1a1a1a 80%, #111 80%)", border:"2px solid #FF4444", boxShadow:"0 0 10px #FF444455", flexShrink:0 },
+    disc:{ width:30, height:34, flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" },
     logoText:{ fontSize:17, letterSpacing:"0.06em", color:"#FFF" },
     logoSub:{ fontSize:9, color:"#555", letterSpacing:"0.12em", marginTop:1 },
     tabs:{ display:"flex" },
@@ -229,9 +229,18 @@ export default function App() {
 
       <div style={S.header}>
         <div style={S.logoRow}>
-          <div style={S.disc} />
+          <div style={S.disc}>
+            <svg width="22" height="34" viewBox="0 0 22 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="11" y1="0" x2="11" y2="5" stroke="#FF4444" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="11" cy="6.5" r="2" fill="none" stroke="#FF4444" strokeWidth="1.5"/>
+              <path d="M2 10 Q2 8 4 8 L18 8 Q20 8 20 10 L20 30 Q20 32 18 32 L4 32 Q2 32 2 30 Z" fill="#111" stroke="#FF4444" strokeWidth="1.5"/>
+              <line x1="6" y1="15" x2="16" y2="15" stroke="#FF4444" strokeWidth="1" strokeLinecap="round" opacity="0.7"/>
+              <line x1="6" y1="19" x2="16" y2="19" stroke="#FF4444" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+              <line x1="6" y1="23" x2="13" y2="23" stroke="#FF4444" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
+            </svg>
+          </div>
           <div>
-            <div style={S.logoText}>GRAIL LOG</div>
+            <div style={S.logoText}>DEAD STOCK</div>
             <div style={S.logoSub}>COLLECTOR'S FIELD GUIDE · WORLDWIDE</div>
           </div>
         </div>
