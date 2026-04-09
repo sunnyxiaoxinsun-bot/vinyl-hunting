@@ -254,7 +254,8 @@ export default function App() {
       && (!filmFavOnly || filmFavs.includes(f.id));
   });
   const filmTotalPages = Math.ceil(filteredFilms.length / FILMS_PER_PAGE);
-  const pagedFilms = filteredFilms.slice(filmPage * FILMS_PER_PAGE, (filmPage + 1) * FILMS_PER_PAGE);
+  const safeFilmPage = Math.min(filmPage, Math.max(0, filmTotalPages - 1));
+  const pagedFilms = filteredFilms.slice(safeFilmPage * FILMS_PER_PAGE, (safeFilmPage + 1) * FILMS_PER_PAGE);
 
   const filteredTheaters = THEATERS.filter(t => {
     const q = theaterSearch.toLowerCase();
@@ -691,11 +692,11 @@ export default function App() {
               <button style={S.toggle(filmFavOnly)} onClick={()=>{setFilmFavOnly(!filmFavOnly);setFilmPage(0);}}>\u2665 SAVED</button>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-              <span style={S.countLine}>{filteredFilms.length} films  {filmTotalPages > 1 ? `\u00b7  p.${filmPage+1}/${filmTotalPages}` : ""}</span>
+              <span style={S.countLine}>{filteredFilms.length} films  {filmTotalPages > 1 ? "\u00b7 p." + (safeFilmPage+1) + "/" + filmTotalPages : ""}</span>
               {filmTotalPages > 1 && (
                 <div style={{display:"flex",gap:4}}>
-                  <button style={{...S.toggle(false),padding:"4px 10px",opacity:filmPage===0?0.3:1}} onClick={()=>{if(filmPage>0){setFilmPage(filmPage-1);window.scrollTo(0,0);}}} disabled={filmPage===0}>\u2039 PREV</button>
-                  <button style={{...S.toggle(false),padding:"4px 10px",opacity:filmPage===filmTotalPages-1?0.3:1}} onClick={()=>{if(filmPage<filmTotalPages-1){setFilmPage(filmPage+1);window.scrollTo(0,0);}}} disabled={filmPage===filmTotalPages-1}>NEXT \u203a</button>
+                  <button style={{...S.toggle(false),padding:"4px 10px",opacity:safeFilmPage===0?0.3:1}} onClick={()=>{setFilmPage(p=>Math.max(0,p-1));window.scrollTo(0,0);}}>&#8249; PREV</button>
+                  <button style={{...S.toggle(false),padding:"4px 10px",opacity:safeFilmPage===filmTotalPages-1?0.3:1}} onClick={()=>{setFilmPage(p=>Math.min(filmTotalPages-1,p+1));window.scrollTo(0,0);}}>NEXT &#8250;</button>
                 </div>
               )}
             </div>
@@ -720,12 +721,12 @@ export default function App() {
               <div style={{marginTop:16,paddingBottom:8}}>
                 <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:10}}>
                   {Array.from({length:filmTotalPages},(_,i)=>(
-                    <button key={i} style={{...S.toggle(i===filmPage),padding:"5px 9px",fontSize:9,minWidth:32}} onClick={()=>{setFilmPage(i);window.scrollTo(0,0);}}>{i+1}</button>
+                    <button key={i} style={{...S.toggle(i===safeFilmPage),padding:"5px 9px",fontSize:9,minWidth:32}} onClick={()=>{setFilmPage(i);window.scrollTo(0,0);}}>{i+1}</button>
                   ))}
                 </div>
                 <div style={{display:"flex",gap:6,justifyContent:"center"}}>
-                  <button style={{...S.toggle(false),padding:"6px 18px",opacity:filmPage===0?0.3:1}} onClick={()=>{setFilmPage(p=>Math.max(0,p-1));window.scrollTo(0,0);}}>&#8249; PREV</button>
-                  <button style={{...S.toggle(false),padding:"6px 18px",opacity:filmPage===filmTotalPages-1?0.3:1}} onClick={()=>{setFilmPage(p=>Math.min(filmTotalPages-1,p+1));window.scrollTo(0,0);}}>NEXT &#8250;</button>
+                  <button style={{...S.toggle(false),padding:"6px 18px",opacity:safeFilmPage===0?0.3:1}} onClick={()=>{setFilmPage(p=>Math.max(0,p-1));window.scrollTo(0,0);}}>&#8249; PREV</button>
+                  <button style={{...S.toggle(false),padding:"6px 18px",opacity:safeFilmPage===filmTotalPages-1?0.3:1}} onClick={()=>{setFilmPage(p=>Math.min(filmTotalPages-1,p+1));window.scrollTo(0,0);}}>NEXT &#8250;</button>
                 </div>
               </div>
             )}
