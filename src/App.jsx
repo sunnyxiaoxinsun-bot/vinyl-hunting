@@ -6,12 +6,13 @@ import { BARS_LATAM, LATAM_AREAS } from "./bars_latam";
 import { FILMS, THEATERS, THEATER_AREAS, FILM_ERAS, FILM_GENRES, FILM_COUNTRIES, FILM_RARITIES } from "./films";
 import { FILMS_B2 } from "./films_b2";
 import { FILMS_B3 } from "./films_b3";
+import { FILMS_B4 } from "./films_b4";
 import { SCREENPLAYS } from "./screenplays";
 import { SOUNDTRACKS } from "./soundtracks";
 
 const ALL_BARS = [...BARS, ...BARS_LATAM];
 const ALL_BAR_AREAS = [...BAR_AREAS, ...LATAM_AREAS];
-const ALL_FILMS = [...FILMS, ...FILMS_B2, ...FILMS_B3];
+const ALL_FILMS = [...FILMS, ...FILMS_B2, ...FILMS_B3, ...FILMS_B4];
 
 const rarityColor = (r) => {
   if (r === "holy grail") return { bg:"#3D0000", text:"#FF6B6B", border:"#8B0000" };
@@ -169,6 +170,8 @@ export default function App() {
   const [filmRarityFilter, setFilmRarityFilter] = useState("All");
   const [filmFindableOnly, setFilmFindableOnly] = useState(false);
   const [filmFavOnly, setFilmFavOnly] = useState(false);
+  const [filmPage, setFilmPage] = useState(0);
+  const FILMS_PER_PAGE = 50;
   const [selectedFilm, setSelectedFilm] = useState(null);
   const [theaterSearch, setTheaterSearch] = useState("");
   const [theaterArea, setTheaterArea] = useState("all");
@@ -250,6 +253,8 @@ export default function App() {
       && (!filmFindableOnly || f.findable)
       && (!filmFavOnly || filmFavs.includes(f.id));
   });
+  const filmTotalPages = Math.ceil(filteredFilms.length / FILMS_PER_PAGE);
+  const pagedFilms = filteredFilms.slice(filmPage * FILMS_PER_PAGE, (filmPage + 1) * FILMS_PER_PAGE);
 
   const filteredTheaters = THEATERS.filter(t => {
     const q = theaterSearch.toLowerCase();
@@ -412,7 +417,7 @@ export default function App() {
             </svg>
             <div>
               <div style={S.sectionCardTitle}>FILMS</div>
-              <div style={S.sectionCardSub}>Top 900 films by era{"\n"}Independent theaters worldwide</div>
+              <div style={S.sectionCardSub}>Top 1200 films by era{"\n"}Independent theaters worldwide</div>
               <div style={S.sectionCount}>{ALL_FILMS.length} films  {THEATERS.length} theaters</div>
             </div>
           </div>
@@ -668,25 +673,33 @@ export default function App() {
         <div style={S.body}>
 
           {filmTab==="films" && <>
-            <input style={S.search} placeholder="Search title, director, or country..." value={filmSearch} onChange={e=>setFilmSearch(e.target.value)} />
+            <input style={S.search} placeholder="Search title, director, or country..." value={filmSearch} onChange={e=>{setFilmSearch(e.target.value);setFilmPage(0);}} />
             <div style={S.filterRow}>
-              <select style={S.sel} value={filmEraFilter} onChange={e=>setFilmEraFilter(e.target.value)}>
+              <select style={S.sel} value={filmEraFilter} onChange={e=>{setFilmEraFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_ERAS.map(e=><option key={e} value={e}>{e==="All"?"ERA":e}</option>)}
               </select>
-              <select style={S.sel} value={filmGenreFilter} onChange={e=>setFilmGenreFilter(e.target.value)}>
+              <select style={S.sel} value={filmGenreFilter} onChange={e=>{setFilmGenreFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_GENRES.map(g=><option key={g} value={g}>{g==="All"?"GENRE":g}</option>)}
               </select>
-              <select style={S.sel} value={filmCountryFilter} onChange={e=>setFilmCountryFilter(e.target.value)}>
+              <select style={S.sel} value={filmCountryFilter} onChange={e=>{setFilmCountryFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_COUNTRIES.map(c=><option key={c} value={c}>{c==="All"?"COUNTRY":c}</option>)}
               </select>
-              <select style={S.sel} value={filmRarityFilter} onChange={e=>setFilmRarityFilter(e.target.value)}>
+              <select style={S.sel} value={filmRarityFilter} onChange={e=>{setFilmRarityFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_RARITIES.map(r=><option key={r} value={r}>{r==="All"?"RARITY":r}</option>)}
               </select>
-              <button style={S.toggle(filmFindableOnly)} onClick={()=>setFilmFindableOnly(!filmFindableOnly)}>FINDABLE</button>
-              <button style={S.toggle(filmFavOnly)} onClick={()=>setFilmFavOnly(!filmFavOnly)}> SAVED</button>
+              <button style={S.toggle(filmFindableOnly)} onClick={()=>{setFilmFindableOnly(!filmFindableOnly);setFilmPage(0);}}>FINDABLE</button>
+              <button style={S.toggle(filmFavOnly)} onClick={()=>{setFilmFavOnly(!filmFavOnly);setFilmPage(0);}}>\u2665 SAVED</button>
             </div>
-            <div style={S.countLine}>{filteredFilms.length} / {ALL_FILMS.length} FILMS</div>
-            {filteredFilms.map(f=>(
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <span style={S.countLine}>{filteredFilms.length} films  {filmTotalPages > 1 ? `\u00b7  p.${filmPage+1}/${filmTotalPages}` : ""}</span>
+              {filmTotalPages > 1 && (
+                <div style={{display:"flex",gap:4}}>
+                  <button style={{...S.toggle(false),padding:"4px 10px",opacity:filmPage===0?0.3:1}} onClick={()=>{if(filmPage>0){setFilmPage(filmPage-1);window.scrollTo(0,0);}}} disabled={filmPage===0}>\u2039 PREV</button>
+                  <button style={{...S.toggle(false),padding:"4px 10px",opacity:filmPage===filmTotalPages-1?0.3:1}} onClick={()=>{if(filmPage<filmTotalPages-1){setFilmPage(filmPage+1);window.scrollTo(0,0);}}} disabled={filmPage===filmTotalPages-1}>NEXT \u203a</button>
+                </div>
+              )}
+            </div>
+            {pagedFilms.map(f=>(
               <div key={f.id} style={S.card} onClick={()=>setSelectedFilm(f)}>
                 <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>toggle(setFilmFavs)(f.id,e)}>{filmFavs.includes(f.id)?"\u2665":"\u2661"}</button>
                 <div style={S.rank}>#{f.rank}</div>
@@ -703,6 +716,19 @@ export default function App() {
                 </div>
               </div>
             ))}
+            {filmTotalPages > 1 && (
+              <div style={{marginTop:16,paddingBottom:8}}>
+                <div style={{display:"flex",gap:4,flexWrap:"wrap",marginBottom:10}}>
+                  {Array.from({length:filmTotalPages},(_,i)=>(
+                    <button key={i} style={{...S.toggle(i===filmPage),padding:"5px 9px",fontSize:9,minWidth:32}} onClick={()=>{setFilmPage(i);window.scrollTo(0,0);}}>{i+1}</button>
+                  ))}
+                </div>
+                <div style={{display:"flex",gap:6,justifyContent:"center"}}>
+                  <button style={{...S.toggle(false),padding:"6px 18px",opacity:filmPage===0?0.3:1}} onClick={()=>{setFilmPage(p=>Math.max(0,p-1));window.scrollTo(0,0);}}>&#8249; PREV</button>
+                  <button style={{...S.toggle(false),padding:"6px 18px",opacity:filmPage===filmTotalPages-1?0.3:1}} onClick={()=>{setFilmPage(p=>Math.min(filmTotalPages-1,p+1));window.scrollTo(0,0);}}>NEXT &#8250;</button>
+                </div>
+              </div>
+            )}
           </>}
 
           {filmTab==="theaters" && <>
