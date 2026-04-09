@@ -331,10 +331,10 @@ export default function App() {
     return (
       <div style={S.modal} onClick={onClose}>
         <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-          <button style={S.closeBtn} onClick={onClose}>CLOSE </button>
+          <button style={S.closeBtn} onClick={onClose}>CLOSE X</button>
           <div style={S.stars}>
             <span style={S.starNum}>{shop.rating}</span>
-            <span style={{fontSize:12,color:"#FBBF24"}}>{"".repeat(Math.floor(shop.rating))}</span>
+            <span style={{fontSize:12,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(shop.rating))}</span>
             {open !== null && <span style={{...S.openBadge(open), marginLeft:6}}>{open?"OPEN NOW":"CLOSED"}</span>}
           </div>
           <div style={{...S.mTitle, marginTop:8}}>{shop.name}</div>
@@ -464,7 +464,7 @@ export default function App() {
             <div style={S.countLine}>{filteredVinyls.length} / {VINYLS.length} RECORDS</div>
             {filteredVinyls.map(v=>(
               <div key={v.id} style={S.card} onClick={()=>setSelectedVinyl(v)}>
-                <button style={S.favBtn(vinylFavs.includes(v.id))} onClick={e=>toggle(setVinylFavs)(v.id,e)}>{vinylFavs.includes(v.id)?"":""}</button>
+                <button style={S.favBtn(vinylFavs.includes(v.id))} onClick={e=>toggle(setVinylFavs)(v.id,e)}>{vinylFavs.includes(v.id)?"\u2665":"\u2661"}</button>
                 <div style={S.rank}>#{v.rank}</div>
                 <div style={S.cardTitle}>{v.title}</div>
                 <div style={S.cardSub}>{v.artist}  {v.label}  {v.year}</div>
@@ -487,7 +487,7 @@ export default function App() {
               const open = isOpenNow(s.hours);
               return (
                 <div key={s.id} style={S.shopCard} onClick={()=>setSelectedShop(s)}>
-                  <button style={S.favBtn(shopFavs.includes(s.id))} onClick={e=>toggle(setShopFavs)(s.id,e)}>{shopFavs.includes(s.id)?"":""}</button>
+                  <button style={S.favBtn(shopFavs.includes(s.id))} onClick={e=>toggle(setShopFavs)(s.id,e)}>{shopFavs.includes(s.id)?"\u2665":"\u2661"}</button>
                   <div style={S.shopName}>{s.name}</div>
                   <div style={S.shopCity}>{s.city}</div>
                   <div style={{...S.pills,marginBottom:7}}>
@@ -495,7 +495,7 @@ export default function App() {
                     {open !== null && <span style={S.openBadge(open)}>{open?"OPEN NOW":"CLOSED"}</span>}
                   </div>
                   <div style={S.shopNotes}>{s.notes}</div>
-                  <div style={S.stars}><span style={S.starNum}>{s.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"".repeat(Math.floor(s.rating))}{"".repeat(5-Math.floor(s.rating))}</span></div>
+                  <div style={S.stars}><span style={S.starNum}>{s.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(s.rating))}{"\u2606".repeat(5-Math.floor(s.rating))}</span></div>
                 </div>
               );
             })}
@@ -505,7 +505,7 @@ export default function App() {
         {selectedVinyl && (
           <div style={S.modal} onClick={()=>setSelectedVinyl(null)}>
             <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-              <button style={S.closeBtn} onClick={()=>setSelectedVinyl(null)}>CLOSE </button>
+              <button style={S.closeBtn} onClick={()=>setSelectedVinyl(null)}>CLOSE X</button>
               <div style={S.mRank}>#{selectedVinyl.rank} OF {VINYLS.length}</div>
               <div style={S.mTitle}>{selectedVinyl.title}</div>
               <div style={S.mArtist}>{selectedVinyl.artist}</div>
@@ -549,7 +549,7 @@ export default function App() {
             <div style={S.countLine}>{filteredVintage.length} / {VINTAGE.length} PIECES</div>
             {filteredVintage.map(v=>(
               <div key={v.id} style={S.card} onClick={()=>setSelectedVintage(v)}>
-                <button style={S.favBtn(vintageFavs.includes(v.id))} onClick={e=>toggle(setVintageFavs)(v.id,e)}>{vintageFavs.includes(v.id)?"":""}</button>
+                <button style={S.favBtn(vintageFavs.includes(v.id))} onClick={e=>toggle(setVintageFavs)(v.id,e)}>{vintageFavs.includes(v.id)?"\u2665":"\u2661"}</button>
                 <div style={S.rank}>#{v.rank}</div>
                 <div style={S.cardTitle}>{v.name}</div>
                 <div style={S.cardSub}>{v.brand}  {v.era}</div>
@@ -572,7 +572,7 @@ export default function App() {
               const open = isOpenNow(s.hours);
               return (
                 <div key={s.id} style={S.shopCard} onClick={()=>setSelectedVstore(s)}>
-                  <button style={S.favBtn(vstoreFavs.includes(s.id))} onClick={e=>toggle(setVstoreFavs)(s.id,e)}>{vstoreFavs.includes(s.id)?"":""}</button>
+                  <button style={S.favBtn(vstoreFavs.includes(s.id))} onClick={e=>toggle(setVstoreFavs)(s.id,e)}>{vstoreFavs.includes(s.id)?"\u2665":"\u2661"}</button>
                   <div style={S.shopName}>{s.name}</div>
                   <div style={S.shopCity}>{s.city}</div>
                   <div style={{...S.pills,marginBottom:7}}>
@@ -580,7 +580,7 @@ export default function App() {
                     {open !== null && <span style={S.openBadge(open)}>{open?"OPEN NOW":"CLOSED"}</span>}
                   </div>
                   <div style={S.shopNotes}>{s.notes}</div>
-                  <div style={S.stars}><span style={S.starNum}>{s.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"".repeat(Math.floor(s.rating))}{"".repeat(5-Math.floor(s.rating))}</span></div>
+                  <div style={S.stars}><span style={S.starNum}>{s.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(s.rating))}{"\u2606".repeat(5-Math.floor(s.rating))}</span></div>
                 </div>
               );
             })}
@@ -590,7 +590,7 @@ export default function App() {
         {selectedVintage && (
           <div style={S.modal} onClick={()=>setSelectedVintage(null)}>
             <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-              <button style={S.closeBtn} onClick={()=>setSelectedVintage(null)}>CLOSE </button>
+              <button style={S.closeBtn} onClick={()=>setSelectedVintage(null)}>CLOSE X</button>
               <div style={S.mRank}>#{selectedVintage.rank} OF {VINTAGE.length}</div>
               <div style={S.mTitle}>{selectedVintage.name}</div>
               <div style={S.mArtist}>{selectedVintage.brand}</div>
@@ -647,7 +647,7 @@ export default function App() {
             <div style={S.countLine}>{filteredFilms.length} / {ALL_FILMS.length} FILMS</div>
             {filteredFilms.map(f=>(
               <div key={f.id} style={S.card} onClick={()=>setSelectedFilm(f)}>
-                <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>toggle(setFilmFavs)(f.id,e)}>{filmFavs.includes(f.id)?"":""}</button>
+                <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>toggle(setFilmFavs)(f.id,e)}>{filmFavs.includes(f.id)?"\u2665":"\u2661"}</button>
                 <div style={S.rank}>#{f.rank}</div>
                 <div style={S.cardTitle}>{f.title}</div>
                 <div style={S.cardSub}>{f.director}  {f.year}  {f.country}</div>
@@ -655,7 +655,7 @@ export default function App() {
                   <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:filmRarityBadge(f.rarity).bg,color:filmRarityBadge(f.rarity).text,border:`1px solid ${filmRarityBadge(f.rarity).border}`,letterSpacing:"0.08em",textTransform:"uppercase"}}>{f.rarity}</span>
                   <span style={S.era(f.era)}>{f.era}</span>
                   <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:genreColor(f.genre).bg,color:genreColor(f.genre).color,border:`1px solid ${genreColor(f.genre).border}`}}>{f.genre}</span>
-                  {f.awards && <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:"#1A1400",color:"#FBBF24",border:"1px solid #92400E44"}}></span>}
+                  {f.awards && <span style={{fontSize:7,padding:"3px 7px",borderRadius:99,background:"#1A1400",color:"#FBBF24",border:"1px solid #92400E44",letterSpacing:"0.06em"}}>AWARD</span>}
                   {f.findable && <span style={S.findPill}>IN REP CINEMA</span>}
                 </div>
               </div>
@@ -669,11 +669,11 @@ export default function App() {
             <div style={S.countLine}>{filteredTheaters.length} / {THEATERS.length} THEATERS</div>
             {filteredTheaters.map(t=>(
               <div key={t.id} style={S.shopCard} onClick={()=>setSelectedTheater(t)}>
-                <button style={S.favBtn(theaterFavs.includes(t.id))} onClick={e=>toggle(setTheaterFavs)(t.id,e)}>{theaterFavs.includes(t.id)?"":""}</button>
+                <button style={S.favBtn(theaterFavs.includes(t.id))} onClick={e=>toggle(setTheaterFavs)(t.id,e)}>{theaterFavs.includes(t.id)?"\u2665":"\u2661"}</button>
                 <div style={S.shopName}>{t.name}</div>
                 <div style={S.shopCity}>{t.city}</div>
                 <div style={S.shopNotes}>{t.notes}</div>
-                <div style={S.stars}><span style={S.starNum}>{t.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"".repeat(Math.floor(t.rating))}{"".repeat(5-Math.floor(t.rating))}</span></div>
+                <div style={S.stars}><span style={S.starNum}>{t.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(t.rating))}{"\u2606".repeat(5-Math.floor(t.rating))}</span></div>
               </div>
             ))}
           </>}
@@ -682,7 +682,7 @@ export default function App() {
         {selectedFilm && (
           <div style={S.modal} onClick={()=>setSelectedFilm(null)}>
             <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-              <button style={S.closeBtn} onClick={()=>setSelectedFilm(null)}>CLOSE </button>
+              <button style={S.closeBtn} onClick={()=>setSelectedFilm(null)}>CLOSE X</button>
               <div style={S.mRank}>#{selectedFilm.rank} OF {ALL_FILMS.length}</div>
               <div style={S.mTitle}>{selectedFilm.title}</div>
               <div style={S.mArtist}>{selectedFilm.director}</div>
@@ -694,7 +694,7 @@ export default function App() {
               </div>
               {selectedFilm.awards && (
                 <div style={{background:"#1A1400",border:"1px solid #92400E44",borderRadius:6,padding:"8px 12px",marginBottom:12,fontSize:11,color:"#FBBF24"}}>
-                   {selectedFilm.awards}
+                  <span style={{fontSize:8,letterSpacing:"0.1em",opacity:0.7}}>AWARD  </span>{selectedFilm.awards}
                 </div>
               )}
               <div style={S.mMeta}>
@@ -721,10 +721,10 @@ export default function App() {
         {selectedTheater && (
           <div style={S.modal} onClick={()=>setSelectedTheater(null)}>
             <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-              <button style={S.closeBtn} onClick={()=>setSelectedTheater(null)}>CLOSE </button>
+              <button style={S.closeBtn} onClick={()=>setSelectedTheater(null)}>CLOSE X</button>
               <div style={S.stars}>
                 <span style={S.starNum}>{selectedTheater.rating}</span>
-                <span style={{fontSize:12,color:"#FBBF24"}}>{"".repeat(Math.floor(selectedTheater.rating))}</span>
+                <span style={{fontSize:12,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(selectedTheater.rating))}</span>
               </div>
               <div style={{...S.mTitle,marginTop:8}}>{selectedTheater.name}</div>
               <div style={{...S.shopCity,fontSize:12,marginBottom:12}}>{selectedTheater.city}</div>
@@ -763,7 +763,7 @@ export default function App() {
           const open = isOpenNow(b.hours);
           return (
             <div key={b.id} style={S.shopCard} onClick={()=>setSelectedBar(b)}>
-              <button style={S.favBtn(barFavs.includes(b.id))} onClick={e=>toggle(setBarFavs)(b.id,e)}>{barFavs.includes(b.id)?"":""}</button>
+              <button style={S.favBtn(barFavs.includes(b.id))} onClick={e=>toggle(setBarFavs)(b.id,e)}>{barFavs.includes(b.id)?"\u2665":"\u2661"}</button>
               <div style={S.shopName}>{b.name}</div>
               <div style={S.shopCity}>{b.city}</div>
               <div style={{...S.pills,marginBottom:7}}>
@@ -771,7 +771,7 @@ export default function App() {
                 {open !== null && <span style={S.openBadge(open)}>{open?"OPEN NOW":"CLOSED"}</span>}
               </div>
               <div style={S.shopNotes}>{b.notes}</div>
-              <div style={S.stars}><span style={S.starNum}>{b.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"".repeat(Math.floor(b.rating))}{"".repeat(5-Math.floor(b.rating))}</span></div>
+              <div style={S.stars}><span style={S.starNum}>{b.rating}</span><span style={{fontSize:11,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(b.rating))}{"\u2606".repeat(5-Math.floor(b.rating))}</span></div>
             </div>
           );
         })}
@@ -782,10 +782,10 @@ export default function App() {
         return (
           <div style={S.modal} onClick={()=>setSelectedBar(null)}>
             <div style={S.modalBox} onClick={e=>e.stopPropagation()}>
-              <button style={S.closeBtn} onClick={()=>setSelectedBar(null)}>CLOSE </button>
+              <button style={S.closeBtn} onClick={()=>setSelectedBar(null)}>CLOSE X</button>
               <div style={S.stars}>
                 <span style={S.starNum}>{selectedBar.rating}</span>
-                <span style={{fontSize:12,color:"#FBBF24"}}>{"".repeat(Math.floor(selectedBar.rating))}</span>
+                <span style={{fontSize:12,color:"#FBBF24"}}>{"\u2605".repeat(Math.floor(selectedBar.rating))}</span>
                 {open !== null && <span style={{...S.openBadge(open),marginLeft:6}}>{open?"OPEN NOW":"CLOSED"}</span>}
               </div>
               <div style={{...S.pills,margin:"8px 0 4px"}}>
