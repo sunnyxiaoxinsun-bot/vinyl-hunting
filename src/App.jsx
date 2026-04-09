@@ -393,6 +393,27 @@ export default function App() {
         <div style={S.landing}>
           <div style={S.landingTitle}>SELECT A SECTION</div>
 
+          <div style={S.sectionCard} onClick={() => setSection("films")}>
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="8" width="32" height="20" rx="2" fill="#111" stroke="#FF4444" strokeWidth="1.5"/>
+              <rect x="2" y="8" width="6" height="20" fill="#111" stroke="#FF4444" strokeWidth="1"/>
+              <rect x="28" y="8" width="6" height="20" fill="#111" stroke="#FF4444" strokeWidth="1"/>
+              <rect x="4" y="11" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
+              <rect x="4" y="16" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
+              <rect x="4" y="21" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
+              <rect x="30" y="11" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
+              <rect x="30" y="16" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
+              <rect x="30" y="21" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
+              <circle cx="18" cy="18" r="4" fill="none" stroke="#FF4444" strokeWidth="1.2"/>
+              <circle cx="18" cy="18" r="1.5" fill="#FF4444"/>
+            </svg>
+            <div>
+              <div style={S.sectionCardTitle}>FILMS</div>
+              <div style={S.sectionCardSub}>Top 600 films by era{"\n"}Independent theaters worldwide</div>
+              <div style={S.sectionCount}>{ALL_FILMS.length} films  {THEATERS.length} theaters</div>
+            </div>
+          </div>
+
           <div style={S.sectionCard} onClick={() => setSection("records")}>
             <VinylDisc size={40} color="#FF4444" />
             <div>
@@ -417,27 +438,6 @@ export default function App() {
               <div style={S.sectionCardTitle}>BARS</div>
               <div style={S.sectionCardSub}>Record bars & great bars{"\n"}All cities worldwide</div>
               <div style={S.sectionCount}>{ALL_BARS.length} bars  {ALL_BAR_AREAS.length - 1} cities</div>
-            </div>
-          </div>
-
-          <div style={S.sectionCard} onClick={() => setSection("films")}>
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="8" width="32" height="20" rx="2" fill="#111" stroke="#FF4444" strokeWidth="1.5"/>
-              <rect x="2" y="8" width="6" height="20" fill="#111" stroke="#FF4444" strokeWidth="1"/>
-              <rect x="28" y="8" width="6" height="20" fill="#111" stroke="#FF4444" strokeWidth="1"/>
-              <rect x="4" y="11" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
-              <rect x="4" y="16" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
-              <rect x="4" y="21" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
-              <rect x="30" y="11" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
-              <rect x="30" y="16" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
-              <rect x="30" y="21" width="2" height="3" rx="0.5" fill="#FF4444" opacity="0.8"/>
-              <circle cx="18" cy="18" r="4" fill="none" stroke="#FF4444" strokeWidth="1.2"/>
-              <circle cx="18" cy="18" r="1.5" fill="#FF4444"/>
-            </svg>
-            <div>
-              <div style={S.sectionCardTitle}>FILMS</div>
-              <div style={S.sectionCardSub}>Top 600 films by era{"\n"}Independent theaters worldwide</div>
-              <div style={S.sectionCount}>{ALL_FILMS.length} films  {THEATERS.length} theaters</div>
             </div>
           </div>
         </div>
