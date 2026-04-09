@@ -168,6 +168,9 @@ export default function App() {
   const [filmGenreFilter, setFilmGenreFilter] = useState("All");
   const [filmCountryFilter, setFilmCountryFilter] = useState("All");
   const [filmFavOnly, setFilmFavOnly] = useState(false);
+  const [filmAwardFilter, setFilmAwardFilter] = useState("All");
+const [filmYearFilter, setFilmYearFilter] = useState("All");
+const [filmScriptOnly, setFilmScriptOnly] = useState(false);
   const [filmPage, setFilmPage] = useState(0);
   const FILMS_PER_PAGE = 50;
   const [selectedFilm, setSelectedFilm] = useState(null);
