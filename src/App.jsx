@@ -621,6 +621,44 @@ export default function App() {
       if (r === "cult")      return { bg:"#1A0A14", text:"#F472B6", border:"#BE185D" };
       return { bg:"#0A1A0A", text:"#4ADE80", border:"#16A34A" };
     };
+    const awardBadge = (awards) => {
+      if (!awards) return null;
+      const a = awards;
+      const oscarCats = (a.match(/Best [A-Z][^,;(]*/g)||[]).length;
+      if (a.includes("Academy Award")) {
+        if (oscarCats >= 7) return oscarCats + " Oscars";
+        if (oscarCats >= 4) return oscarCats + " Oscars";
+        if (oscarCats >= 2) return oscarCats + " Oscars";
+        const first = a.match(/Best ([A-Za-z ]+)/);
+        if (first) {
+          const cat = first[1].trim().replace(/\(.*/,"").trim();
+          const short = cat.replace("Adapted Screenplay","Screenplay").replace("Original Screenplay","Screenplay").replace("Foreign Language Film","Intl Film").replace("Documentary Feature","Documentary").replace("Animated Feature","Animation").replace("Supporting Actor","Supp. Actor").replace("Supporting Actress","Supp. Actress");
+          return "Oscar: " + short.slice(0, 18);
+        }
+      }
+      if (a.includes("Palme d")) return "Palme d'Or";
+      if (a.includes("Golden Lion")) return "Golden Lion";
+      if (a.includes("Golden Bear")) return "Golden Bear";
+      if (a.includes("Grand Prix")) return "Cannes Grand Prix";
+      if (a.includes("Grand Jury Prize")) return "Grand Jury";
+      if (a.includes("Jury Prize")) return "Jury Prize";
+      if (a.includes("Silver Lion")) return "Silver Lion";
+      if (a.includes("Silver Bear")) return "Silver Bear";
+      if (a.includes("BAFTA: Best Film") || a.includes("BAFTA: Best British")) return "BAFTA Best Film";
+      if (a.includes("BAFTA")) { const bm = a.match(/BAFTA: ([^;,]+)/); return bm ? "BAFTA: " + bm[1].slice(0,14) : "BAFTA"; }
+      if (a.includes("Sight & Sound") && a.includes("#1")) return "S&S: #1 Film";
+      if (a.includes("Sight & Sound") && a.includes("Top 10")) return "S&S Top 10";
+      if (a.includes("Sight & Sound")) return "Sight & Sound";
+      if (a.includes("National Film Registry")) return "Natl Film Registry";
+      if (a.includes("Golden Globe")) { const gm = a.match(/Golden Globe[s]?: ([^;,]+)/); return gm ? "GG: " + gm[1].slice(0,14) : "Golden Globe"; }
+      if (a.includes("Independent Spirit")) return "Spirit Award";
+      if (a.includes("FIPRESCI")) return "FIPRESCI Prize";
+      if (a.includes("Felix Award")) return "Felix Award";
+      if (a.includes("Volpi Cup")) return "Volpi Cup";
+      if (a.includes("Honorary Oscar")) return "Honorary Oscar";
+      const fallback = a.split(/[;,]/)[0].trim().slice(0, 22);
+      return fallback || null;
+    };
     return (
       <div style={S.app}>
         <Header tabs={[["films","FILMS"],["theaters","THEATERS"]]} activeTab={filmTab} onTab={setFilmTab} />
@@ -655,7 +693,7 @@ export default function App() {
                   <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:filmRarityBadge(f.rarity).bg,color:filmRarityBadge(f.rarity).text,border:`1px solid ${filmRarityBadge(f.rarity).border}`,letterSpacing:"0.08em",textTransform:"uppercase"}}>{f.rarity}</span>
                   <span style={S.era(f.era)}>{f.era}</span>
                   <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:genreColor(f.genre).bg,color:genreColor(f.genre).color,border:`1px solid ${genreColor(f.genre).border}`}}>{f.genre}</span>
-                  {f.awards && <span style={{fontSize:7,padding:"3px 7px",borderRadius:99,background:"#1A1400",color:"#FBBF24",border:"1px solid #92400E44",letterSpacing:"0.06em"}}>AWARD</span>}
+                  {f.awards && awardBadge(f.awards) && <span style={{fontSize:7,padding:"3px 7px",borderRadius:99,background:"#1A1400",color:"#FBBF24",border:"1px solid #92400E44",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{awardBadge(f.awards)}</span>}
                   {f.findable && <span style={S.findPill}>IN REP CINEMA</span>}
                 </div>
               </div>
