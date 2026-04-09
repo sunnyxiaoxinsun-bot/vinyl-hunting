@@ -2,6 +2,13 @@ import { useState, useEffect } from "react";
 import { VINYLS, SHOPS, AREAS, ERAS, GENRES, RARITIES } from "./data";
 import { VINTAGE, VSTORES, VSTORE_AREAS, VINTAGE_CATEGORIES, VINTAGE_ERAS, VINTAGE_RARITIES } from "./vintage";
 import { BARS, BAR_AREAS, BAR_TYPES } from "./bars";
+import { BARS_LATAM, LATAM_AREAS } from "./bars_latam";
+
+const ALL_BARS = [...BARS, ...BARS_LATAM];
+const ALL_BAR_AREAS = [
+  ...BAR_AREAS,
+  ...LATAM_AREAS,
+];
 import { FILMS, THEATERS, THEATER_AREAS, FILM_ERAS, FILM_GENRES, FILM_COUNTRIES, FILM_RARITIES } from "./films";
 
 const rarityColor = (r) => {
@@ -207,7 +214,7 @@ export default function App() {
       && (!vstoreFavOnly || vstoreFavs.includes(s.id));
   });
 
-  const filteredBars = BARS.filter(b => {
+  const filteredBars = ALL_BARS.filter(b => {
     const q = barSearch.toLowerCase();
     return (!q || b.name.toLowerCase().includes(q) || b.city.toLowerCase().includes(q) || b.notes.toLowerCase().includes(q))
       && (barArea==="all" || b.area===barArea)
@@ -394,7 +401,7 @@ export default function App() {
             <div>
               <div style={S.sectionCardTitle}>BARS</div>
               <div style={S.sectionCardSub}>Record bars & great bars{"\n"}All cities worldwide</div>
-              <div style={S.sectionCount}>{BARS.length} bars  {BAR_AREAS.length - 1} cities</div>
+              <div style={S.sectionCount}>{ALL_BARS.length} bars  {ALL_BAR_AREAS.length - 1} cities</div>
             </div>
           </div>
 
@@ -705,14 +712,14 @@ export default function App() {
       <Header tabs={[["bars","BARS"]]} activeTab={barTab} onTab={setBarTab} />
       <div style={S.body}>
         <input style={S.search} placeholder="Search name, city, or vibe..." value={barSearch} onChange={e=>setBarSearch(e.target.value)} />
-        <div style={S.areaTabs}>{BAR_AREAS.map(({key,label})=><button key={key} style={S.areaTab(barArea===key)} onClick={()=>setBarArea(key)}>{label}</button>)}</div>
+        <div style={S.areaTabs}>{ALL_BAR_AREAS.map(({key,label})=><button key={key} style={S.areaTab(barArea===key)} onClick={()=>setBarArea(key)}>{label}</button>)}</div>
         <div style={S.filterRow}>
           {BAR_TYPES.map(({key,label})=>(
             <button key={key} style={S.toggle(barType===key)} onClick={()=>setBarType(key)}>{label}</button>
           ))}
           <button style={S.toggle(barFavOnly)} onClick={()=>setBarFavOnly(!barFavOnly)}> SAVED</button>
         </div>
-        <div style={S.countLine}>{filteredBars.length} / {BARS.length} BARS</div>
+        <div style={S.countLine}>{filteredBars.length} / {ALL_BARS.length} BARS</div>
         {filteredBars.map(b=>{
           const open = isOpenNow(b.hours);
           return (
