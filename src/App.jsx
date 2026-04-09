@@ -3,7 +3,7 @@ import { VINYLS, SHOPS, AREAS, ERAS, GENRES, RARITIES } from "./data";
 import { VINTAGE, VSTORES, VSTORE_AREAS, VINTAGE_CATEGORIES, VINTAGE_ERAS, VINTAGE_RARITIES } from "./vintage";
 import { BARS, BAR_AREAS, BAR_TYPES } from "./bars";
 import { BARS_LATAM, LATAM_AREAS } from "./bars_latam";
-import { FILMS, THEATERS, THEATER_AREAS, FILM_ERAS, FILM_GENRES, FILM_COUNTRIES, FILM_RARITIES } from "./films";
+import { FILMS, THEATERS, THEATER_AREAS, FILM_ERAS, FILM_GENRES, FILM_COUNTRIES } from "./films";
 import { FILMS_B2 } from "./films_b2";
 import { FILMS_B3 } from "./films_b3";
 import { FILMS_B4 } from "./films_b4";
@@ -167,8 +167,6 @@ export default function App() {
   const [filmEraFilter, setFilmEraFilter] = useState("All");
   const [filmGenreFilter, setFilmGenreFilter] = useState("All");
   const [filmCountryFilter, setFilmCountryFilter] = useState("All");
-  const [filmRarityFilter, setFilmRarityFilter] = useState("All");
-  const [filmFindableOnly, setFilmFindableOnly] = useState(false);
   const [filmFavOnly, setFilmFavOnly] = useState(false);
   const [filmPage, setFilmPage] = useState(0);
   const FILMS_PER_PAGE = 50;
@@ -249,8 +247,6 @@ export default function App() {
       && (filmEraFilter==="All" || f.era===filmEraFilter)
       && (filmGenreFilter==="All" || f.genre.toLowerCase().includes(filmGenreFilter.toLowerCase()))
       && (filmCountryFilter==="All" || f.country.toLowerCase().includes(filmCountryFilter.toLowerCase()))
-      && (filmRarityFilter==="All" || f.rarity===filmRarityFilter)
-      && (!filmFindableOnly || f.findable)
       && (!filmFavOnly || filmFavs.includes(f.id));
   });
   const filmTotalPages = Math.ceil(filteredFilms.length / FILMS_PER_PAGE);
@@ -331,7 +327,7 @@ export default function App() {
 
   const SaveBtn = ({ isFav, onToggle }) => (
     <button style={{...S.actionBtn, background:isFav?"#3D0000":"#1A1A1A", color:isFav?"#FF6B6B":"#777", border:isFav?"1px solid #8B000044":"1px solid #333"}} onClick={onToggle}>
-      {isFav ? " Saved" : " Save"}
+      {isFav ? "\u2665 Saved" : "\u2661 Save"}
     </button>
   );
 
@@ -625,11 +621,6 @@ export default function App() {
 
   // -- FILMS SECTION ---------------------------------------------------------
   if (section === "films") {
-    const filmRarityBadge = (r) => {
-      if (r === "very rare") return { bg:"#1A0A2E", text:"#C084FC", border:"#7C3AED" };
-      if (r === "cult")      return { bg:"#1A0A14", text:"#F472B6", border:"#BE185D" };
-      return { bg:"#0A1A0A", text:"#4ADE80", border:"#16A34A" };
-    };
     const awardBadge = (awards) => {
       if (!awards) return null;
       const a = awards;
@@ -685,10 +676,6 @@ export default function App() {
               <select style={S.sel} value={filmCountryFilter} onChange={e=>{setFilmCountryFilter(e.target.value);setFilmPage(0);}}>
                 {FILM_COUNTRIES.map(c=><option key={c} value={c}>{c==="All"?"COUNTRY":c}</option>)}
               </select>
-              <select style={S.sel} value={filmRarityFilter} onChange={e=>{setFilmRarityFilter(e.target.value);setFilmPage(0);}}>
-                {FILM_RARITIES.map(r=><option key={r} value={r}>{r==="All"?"RARITY":r}</option>)}
-              </select>
-              <button style={S.toggle(filmFindableOnly)} onClick={()=>{setFilmFindableOnly(!filmFindableOnly);setFilmPage(0);}}>FINDABLE</button>
               <button style={S.toggle(filmFavOnly)} onClick={()=>{setFilmFavOnly(!filmFavOnly);setFilmPage(0);}}>\u2665 SAVED</button>
             </div>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
@@ -702,18 +689,16 @@ export default function App() {
             </div>
             {pagedFilms.map(f=>(
               <div key={f.id} style={S.card} onClick={()=>setSelectedFilm(f)}>
-                <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>toggle(setFilmFavs)(f.id,e)}>{filmFavs.includes(f.id)?"\u2665":"\u2661"}</button>
+                <button style={S.favBtn(filmFavs.includes(f.id))} onClick={e=>{e.stopPropagation();e.preventDefault();toggle(setFilmFavs)(f.id,e);}}>{filmFavs.includes(f.id)?"\u2665":"\u2661"}</button>
                 <div style={S.rank}>#{f.rank}</div>
                 <div style={S.cardTitle}>{f.title}</div>
                 <div style={S.cardSub}>{f.director}  {f.year}  {f.country}</div>
                 <div style={S.pills}>
-                  <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:filmRarityBadge(f.rarity).bg,color:filmRarityBadge(f.rarity).text,border:`1px solid ${filmRarityBadge(f.rarity).border}`,letterSpacing:"0.08em",textTransform:"uppercase"}}>{f.rarity}</span>
                   <span style={S.era(f.era)}>{f.era}</span>
                   <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:genreColor(f.genre).bg,color:genreColor(f.genre).color,border:`1px solid ${genreColor(f.genre).border}`}}>{f.genre}</span>
                   {f.awards && awardBadge(f.awards) && <span style={{fontSize:7,padding:"3px 7px",borderRadius:99,background:"#1A1400",color:"#FBBF24",border:"1px solid #92400E44",letterSpacing:"0.05em",whiteSpace:"nowrap"}}>{awardBadge(f.awards)}</span>}
                   {SCREENPLAYS[f.id] && <span style={{fontSize:7,padding:"3px 7px",borderRadius:99,background:"#0A1A0A",color:"#4ADE80",border:"1px solid #16A34A55",letterSpacing:"0.05em"}}>SCRIPT</span>}
                   {SOUNDTRACKS[f.id] && <span style={{fontSize:7,padding:"3px 7px",borderRadius:99,background:"#051205",color:"#1DB954",border:"1px solid #1DB95440",letterSpacing:"0.05em"}}>OST</span>}
-                  {f.findable && <span style={S.findPill}>IN REP CINEMA</span>}
                 </div>
               </div>
             ))}
@@ -757,10 +742,8 @@ export default function App() {
               <div style={S.mTitle}>{selectedFilm.title}</div>
               <div style={S.mArtist}>{selectedFilm.director}</div>
               <div style={{...S.pills,marginBottom:12}}>
-                <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:filmRarityBadge(selectedFilm.rarity).bg,color:filmRarityBadge(selectedFilm.rarity).text,border:`1px solid ${filmRarityBadge(selectedFilm.rarity).border}`,letterSpacing:"0.08em",textTransform:"uppercase"}}>{selectedFilm.rarity}</span>
                 <span style={S.era(selectedFilm.era)}>{selectedFilm.era}</span>
                 <span style={{fontSize:8,padding:"3px 7px",borderRadius:99,background:genreColor(selectedFilm.genre).bg,color:genreColor(selectedFilm.genre).color,border:`1px solid ${genreColor(selectedFilm.genre).border}`}}>{selectedFilm.genre}</span>
-                {selectedFilm.findable && <span style={S.findPill}>IN REP CINEMA</span>}
               </div>
               {selectedFilm.awards && (
                 <div style={{background:"#1A1400",border:"1px solid #92400E44",borderRadius:6,padding:"8px 12px",marginBottom:12,fontSize:11,color:"#FBBF24"}}>
